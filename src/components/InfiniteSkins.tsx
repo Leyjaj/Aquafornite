@@ -81,7 +81,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   //   console.log(id)
   //   setActiveId(prev => (prev === id? null : id));
   // }
-  const currencyPrice = 0.0043 * (rates[currency]??1);
+  const currencyPrice = 0.0035 * (rates[currency]??1);
   console.log(currencyPrice)
   return (
     <section className="p-6">
