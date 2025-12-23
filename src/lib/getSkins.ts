@@ -17,7 +17,7 @@ export async function getSkins() {
     const data = await res.json();
     
     const skinsRate = data.data.entries;
-    const discountRate = 0.0043;
+    const discountRate = 0.0030;
     
     //agregar el discount - descuento que hace aquifornais
     const skins:SkinWithDiscount[] = skinsRate.map((skin:any)=> ({
