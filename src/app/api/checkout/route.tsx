@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
       line_items: LineItems,
       mode: 'payment',
 
+      // ✅ ADAPTIVE PRICING (ÚNICA LÍNEA NUEVA)
+      adaptive_pricing: { enabled: true },
+
       // 👇👇👇 HABILITA EL BOTÓN "AGREGAR CÓDIGO" EN STRIPE CHECKOUT
       allow_promotion_codes: true,
 
