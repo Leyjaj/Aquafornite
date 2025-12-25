@@ -94,7 +94,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
     };
   };
 
-  const currencyPrice = 0.0030 * ((rates && rates[currency]) ?? 1);
+  const currencyPrice = 0.0035 * ((rates && rates[currency]) ?? 1);
 
   return (
     <section className="p-6">
