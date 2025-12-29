@@ -27,7 +27,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   const [visibleCount, setVisibleCount] = useState(4);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useIsMobile();
-  const { currency } = useCurrency();
+  const { currency, rates } = useCurrency();
   const { addItem } = useSkinCart();
 
   const sizeSkin: Record<string, string> = {
@@ -62,50 +62,39 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
           setVisibleCount((prev) => Math.min(prev + 2, categories.length));
         }
       },
-      { rootMargin: "100px" }
+      {
+        rootMargin: "100px",
+      }
     );
 
     observer.observe(observerRef.current);
-    return () => observer.disconnect();
+
+    return () => {
+      observer.disconnect();
+    };
   }, [categories.length]);
 
   const getBackgroundStyle = (skin: Skin) => {
     const colors = skin?.colors;
-    if (!colors) return { background: "#333" };
+    if (!colors) {
+      return { background: "#333" };
+    }
 
     const colorStops: string[] = [];
     if (colors.color1) colorStops.push(`#${colors.color1}`);
     if (colors.color2) colorStops.push(`#${colors.color2}`);
     if (colors.color3) colorStops.push(`#${colors.color3}`);
 
-    if (colorStops.length === 0) return { background: "#333" };
+    if (colorStops.length === 0) {
+      return { background: "#333" };
+    }
 
-    return { background: `linear-gradient(to bottom, ${colorStops.join(", ")})` };
+    return {
+      background: `linear-gradient(to bottom, ${colorStops.join(", ")})`,
+    };
   };
 
-  // ✅ REGLA FIJA: 100 V-Bucks = X (lo que tú definiste)
-  const PRICE_PER_100: Record<string, number> = {
-    USD: 0.35,
-    MXN: 6,
-    PEN: 1.2,
-    BRL: 1.8,
-    CLP: 300,
-    COP: 1250,
-    EUR: 0.3,
-  };
-
-  const ZERO_DECIMAL = new Set(["CLP", "COP"]);
-
-  const calcPrice = (vbucks: number) => {
-    const c = String(currency).toUpperCase();
-    const per100 = PRICE_PER_100[c] ?? 0;
-    const amount = (Number(vbucks) / 100) * per100;
-
-    // CLP/COP sin decimales
-    if (ZERO_DECIMAL.has(c)) return Math.round(amount);
-
-    return Number(amount.toFixed(2));
-  };
+  const currencyPrice = 0.0035 * ((rates && rates[currency]) ?? 1);
 
   return (
     <section className="p-6">
@@ -116,6 +105,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4 justify-items-center">
             {Array.isArray(value?.skins) &&
               value.skins.map((skin, idx) => {
+                // 🔹 Aseguramos que renderImages y tracks sean arrays
                 const renderImages = Array.isArray(
                   (skin as any)?.newDisplayAsset?.renderImages
                 )
@@ -126,9 +116,13 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                   ? (skin as any).tracks
                   : [];
 
-                const imageSrc = renderImages[0]?.image ?? tracks[0]?.albumArt ?? null;
+                const imageSrc =
+                  renderImages[0]?.image ?? tracks[0]?.albumArt ?? null;
 
-                if (!imageSrc) return null;
+                // Si no hay imagen, no pintamos esta card
+                if (!imageSrc) {
+                  return null;
+                }
 
                 const tileSize = (skin as any).tileSize || "Size_1_x_1";
 
@@ -139,12 +133,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                   (skin as any)?.displayName ||
                   "Skin";
 
-                const finalPrice = Number((skin as any)?.finalPrice ?? 0) || 0;
-
-                const shown = calcPrice(finalPrice);
-                const shownText = ZERO_DECIMAL.has(String(currency).toUpperCase())
-                  ? String(shown)
-                  : Number(shown).toFixed(2);
+                const finalPrice = (skin as any)?.finalPrice ?? 0;
 
                 return (
                   <div
@@ -164,9 +153,14 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                     >
                       <Image
                         fill
+                        // mejor usar className en lugar de objectFit prop
                         className={`z-0 transition-transform duration-700 ease-out ${
                           scaleSkin[tileSize] ?? ""
-                        } ${tileSize === "Size_3_x_1" ? "object-cover" : "object-contain"}`}
+                        } ${
+                          tileSize === "Size_3_x_1"
+                            ? "object-cover"
+                            : "object-contain"
+                        }`}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/Tj7XngAAAABJRU5ErkJggg=="
                         src={imageSrc}
@@ -184,7 +178,11 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                           {displayName}
                         </span>
                         <span className="text-white/75 text-lg">
-                          {finalPrice} V-BUCKS - {shownText} {currency}
+                          {finalPrice} V-BUCKS -{" "}
+                          {parseFloat(
+                            (finalPrice * currencyPrice).toFixed(2)
+                          )}{" "}
+                          {currency}
                         </span>
                       </div>
 
