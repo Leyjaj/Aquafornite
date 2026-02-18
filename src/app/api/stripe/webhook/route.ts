@@ -1,43 +1,113 @@
-export const runtime = "nodejs";
-
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { PrismaClient } from "@prisma/client";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const prisma = new PrismaClient();
 
-export async function POST(req: Request) {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2025-08-27.basil",
+});
+
+export async function POST(req: NextRequest) {
+  const sig = req.headers.get("stripe-signature") as string;
   const body = await req.text();
-  const signature = req.headers.get("stripe-signature");
-
-  if (!signature) {
-    return new NextResponse("No signature", { status: 400 });
-  }
-
-  let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    const event = stripe.webhooks.constructEvent(
       body,
-      signature,
+      sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (err) {
-    console.error("Webhook signature error");
-    return new NextResponse("Invalid signature", { status: 400 });
-  }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
 
-    if (session.payment_status === "paid") {
-      const coins = session.metadata?.coins ?? "0";
+      const userId = session.metadata?.userId;
+      const type = session.metadata?.type;
 
-      // Log y proceso para confirmar pago y recarga
-      console.log("✅ Pago confirmado");
-      console.log("Coins:", coins);
-      console.log("Session ID:", session.id);
+      if (!userId) {
+        return NextResponse.json({ received: true });
+      }
+
+      // ======================================
+      // 🟦 RECARGA AQUACOINS
+      // ======================================
+      if (type === "aquacoins") {
+        const coins = JSON.parse(session.metadata?.items || "{}");
+
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            aquacoins: {
+              increment: coins.quantity,
+            },
+          },
+        });
+
+        await prisma.aquacoins_history.create({
+          data: {
+            user_id: userId,
+            amount: coins.quantity,
+          },
+        });
+
+        console.log("✅ Recarga AquaCoins guardada");
+      }
+
+      // ======================================
+      // 🟨 COMPRA SKINS / VBUCKS
+      // ======================================
+      else {
+        const items = JSON.parse(session.metadata?.items || "[]");
+        const total = session.amount_total! / 100;
+
+        // Guardar orden normal
+        await prisma.orders.create({
+          data: {
+            user_id: userId,
+            items: JSON.stringify(items),
+            total: total,
+          },
+        });
+
+        console.log("✅ Orden skins guardada");
+
+        // 🔥 NUEVO → CASHBACK 10%
+        // Sacamos pavos del primer item (ajústalo si cambias estructura)
+        const vbucks = items?.[0]?.vbucks || 0;
+        const cashback = Math.floor(vbucks * 0.1);
+
+        if (cashback > 0) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              aquacoins: {
+                increment: cashback,
+              },
+            },
+          });
+
+          await prisma.aquacoins_history.create({
+            data: {
+              user_id: userId,
+              amount: cashback,
+            },
+          });
+
+          console.log("🔥 Cashback aplicado:", cashback);
+        }
+      }
     }
-  }
 
-  return NextResponse.json({ received: true });
+    return NextResponse.json({ received: true }, { status: 200 });
+  } catch (e: any) {
+    console.error("❌ Error en Webhook:", e.message);
+    return NextResponse.json({ error: "Webhook Error" }, { status: 400 });
+  }
 }
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
