@@ -1,99 +1,38 @@
 generator client {
   provider = "prisma-client-js"
-  engineType = "client"
-  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = "prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19ab1pHaWpqUmFRbXFmS2FETk5taXYiLCJhcGlfa2V5IjoiMDFLOUU1MDJQTVhaU1hSUjVLWUFZQU1HSjAiLCJ0ZW5hbnRfaWQiOiI0ODMyNDI5ZDAwODhmMmYyMmFjYjYzMzgwZmJhMjE0MjMwMjQ3ZjdiNWE1ZjIwMWQ5MDk0OTVkZWM1NThjZjExIiwiaW50ZXJuYWxfc2VjcmV0IjoiMjgzNjBlYjAtYTc2My00ZTM1LWJhZTQtZjM0MjNhZDE0OGEwIn0.oR0t4e3UrRnw5rZSxgEQhPY_NxJyTak3C67qPQshZ2o"
-
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(uuid())
-  uuid          String    @default(uuid()) @unique
-  name          String
-  email         String    @unique
-  password      String?
-  aquacoins     Int?      @default(0)
-  discord_name  String?
-  discord_id    String?   @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-
-  sessions      Session[]
-  accounts      Account[]
-  orders        Orders[]
-  aquacoins_h   aquacoins_history[]
-
-  @@map("user")
-}
-
-model Session {
-  id        String   @id @default(uuid())
-  expiresAt DateTime
-  token     String   @unique
+  id        String   @id @default(cuid())
+  discordId String?  @unique
+  email     String?  @unique
+  coins     Int      @default(0)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
+
+  purchases Purchase[]
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountUSD Float
+  vbucks    Int
+  cashback  Int
+  createdAt DateTime @default(now())
 
-  @@map("session")
+  user User @relation(fields: [userId], references: [id])
 }
 
-model Account {
-  id                    String    @id @default(uuid())
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  global_name           String?
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+model AquacoinsHistory {
+  id        String   @id @default(cuid())
+  user_id   String
+  amount    Int
+  createdAt DateTime @default(now())
 
-  @@map("account")
-}
-
-model Orders {
-  id         Int      @id @default(autoincrement())
-  user_id    String
-  items      String
-  total      Decimal  @db.Decimal(11, 2)
-  created_at DateTime @default(now())
-  user       User     @relation(fields: [user_id], references: [id])
-
-  @@map("orders")
-}
-
-model aquacoins_history {
-  id         Int      @id @default(autoincrement())
-  user_id    String
-  amount     Decimal  @db.Decimal(11, 2)
-  created_at DateTime @default(now())
-  user       User     @relation(fields: [user_id], references: [id])
-
-  @@map("aquacoins_history")
-}
-
-model Verification {
-  id         String   @id @default(uuid())
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-
-  @@map("verification")
+  user User @relation(fields: [user_id], references: [id])
 }
