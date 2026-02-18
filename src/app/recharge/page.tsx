@@ -44,8 +44,7 @@ export default function RechargePage() {
       </h1>
       <p className="text-lg mb-8 text-gray-200 text-center max-w-xl">
         Elige uno de los paquetes disponibles para obtener AquaCoins.
-        Los precios son en USD y mostrados bajo cada paquete, como un
-        cartel claro para el cliente.
+        recuerda que estos son para usar en esta pagina y recibir que lo que pediste 
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
