@@ -1,64 +1,51 @@
-
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from "@prisma/client"
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('user_id');
-        if (!userId) {
-            return NextResponse.json({
-                error: 'El parametro user_id es obligatorio'
-            }, { status: 400 })
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
 
-        }
+  if (!userId) {
+    return NextResponse.json([]);
+  }
 
-        const history = await prisma.orders.findMany({
-            where: { user_id: userId },
-            orderBy: { created_at: 'desc' }
-        });
+  try {
+    // 🔥 Historial de compras (skins/vbucks)
+    const purchases = await prisma.purchase.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
 
-        return NextResponse.json({ history }, { status: 200 });
-    } catch (error) {
-        console.error('❌ Error al obtener historial:', error);
-        return NextResponse.json(
-            { error: 'Error interno del servidor' },
-            { status: 500 }
-        );
-    }
+    // 🟦 Historial AquaCoins
+    const coins = await prisma.aquacoinsHistory.findMany({
+      where: { user_id: userId },
+      orderBy: { createdAt: "desc" },
+    });
 
-}
+    // 🔥 UNIMOS TODO EN UN SOLO HISTORIAL
+    const history = [
+      ...purchases.map((p) => ({
+        id: p.id,
+        type: "purchase",
+        total: p.amountUSD,
+        vbucks: p.vbucks,
+        createdAt: p.createdAt,
+      })),
 
-export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-        const { user_id, items, total } = body;
-        if (!user_id || !Array.isArray(items) || !total) {
-            console.log(user_id, items, total)
-            return NextResponse.json({ error: "Datos faltantes o invalidos" }, { status: 400 })
-        }
-        const itemsJSON = JSON.stringify(items);
-        const sql = `
-            INSERT INTO history (user_id, items, total)
-            VALUES (?, ?, ?)
-        `
-        const newOrder = await prisma.orders.create({
-            data: {
-                user_id: user_id,
-                items: JSON.stringify(items), // Prisma espera un `String`, así que lo convertimos
-                total: total
-            }
-        });
+      ...coins.map((c) => ({
+        id: c.id,
+        type: "aquacoins",
+        total: c.amount,
+        vbucks: 0,
+        createdAt: c.createdAt,
+      })),
+    ].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
-        return NextResponse.json(
-            { message: 'Orden guardada correctamente', insertId: newOrder.id },
-            { status: 201 }
-        );
-    } catch (error) {
-        console.error("❌ Error al guardar historial:", error);
-        return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
-    }
-
+    return NextResponse.json(history);
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json([]);
+  }
 }
