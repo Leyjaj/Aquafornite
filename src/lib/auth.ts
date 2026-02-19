@@ -55,7 +55,7 @@ export const auth = betterAuth({
             await prisma.user.update({
               where: { id: account.userId },
               data: {
-                discordId: account.providerAccountId,
+                discordId: String(account.providerAccountId),
               },
             });
           }
