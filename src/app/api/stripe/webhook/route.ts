@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        await prisma.aquacoins_history.create({
+        await prisma.aquacoinsHistory.create({
           data: {
             user_id: userId,
             amount: coins.quantity,
@@ -55,28 +55,28 @@ export async function POST(req: NextRequest) {
       }
 
       // ======================================
-      // 🟨 COMPRA SKINS / VBUCKS
+      // 🟨 COMPRA SKINS / VBUCKS + CASHBACK
       // ======================================
       else {
         const items = JSON.parse(session.metadata?.items || "[]");
         const total = session.amount_total! / 100;
 
-        // Guardar orden normal
-        await prisma.orders.create({
-          data: {
-            user_id: userId,
-            items: JSON.stringify(items),
-            total: total,
-          },
-        });
-
-        console.log("✅ Orden skins guardada");
-
-        // 🔥 NUEVO → CASHBACK 10%
-        // Sacamos pavos del primer item (ajústalo si cambias estructura)
         const vbucks = items?.[0]?.vbucks || 0;
         const cashback = Math.floor(vbucks * 0.1);
 
+        // 🔥 Guardar compra en tabla Purchase (según tu schema)
+        await prisma.purchase.create({
+          data: {
+            userId: userId,
+            amountUSD: total,
+            vbucks: vbucks,
+            cashback: cashback,
+          },
+        });
+
+        console.log("✅ Compra guardada");
+
+        // 🔥 Aplicar cashback
         if (cashback > 0) {
           await prisma.user.update({
             where: { id: userId },
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
             },
           });
 
-          await prisma.aquacoins_history.create({
+          await prisma.aquacoinsHistory.create({
             data: {
               user_id: userId,
               amount: cashback,
