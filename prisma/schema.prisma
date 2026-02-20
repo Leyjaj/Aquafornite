@@ -8,24 +8,24 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String?
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Custom fields
   aquacoins Int     @default(0)
   discordId String? @unique
 
   // Relations
-  sessions    Session[]
-  accounts    Account[]
+  sessions         Session[]
+  accounts         Account[]
   aquacoinsHistory AquacoinsHistory[]
+  Purchase         Purchase[]
 }
-
 
 model Session {
   id        String   @id @default(cuid())
@@ -42,11 +42,11 @@ model Session {
 }
 
 model Account {
-  id        String   @id @default(cuid())
-  accountId String
+  id         String @id @default(cuid())
+  accountId  String
   providerId String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   accessToken  String?
   refreshToken String?
@@ -68,7 +68,6 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
-
 
 model Purchase {
   id        String   @id @default(cuid())
