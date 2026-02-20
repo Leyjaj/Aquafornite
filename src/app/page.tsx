@@ -66,7 +66,7 @@ export default function HomePage() {
 
           {/* LOGIN */}
           <Link
-            href="/login"
+            href="/auth"
             className="
               btn btn-sm md:btn-md
               border-0

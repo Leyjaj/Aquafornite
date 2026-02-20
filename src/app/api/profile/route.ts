@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+export const runtime = "nodejs";
 
 export async function GET() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const h = headers();
+  const hh = new Headers();
+  h.forEach((v, k) => hh.set(k, v));
 
-  if (!session) {
+  const session = await auth.api.getSession({ headers: hh });
+
+  if (!session?.user) {
     return NextResponse.json({ error: "No Autorizado" }, { status: 401 });
   }
 
