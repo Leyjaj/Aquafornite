@@ -18,10 +18,6 @@ export const auth = betterAuth({
 
   user: {
     additionalFields: {
-      discordName: {
-        type: "string",
-        required: false,
-      },
       discordId: {
         type: "string",
         required: false,
@@ -34,33 +30,13 @@ export const auth = betterAuth({
       clientId: process.env.DISCORD_CLIENT_ID as string,
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
       permissions: 2048 | 16384,
-
       mapProfileToUser: async (profile) => {
         return {
           discordId: profile.id,
-          discordName: profile.username ?? "NO_USERNAME",
         };
       },
     },
   },
 
   plugins: [nextCookies()],
-
-  // 🔥 ESTO ES LO QUE TE FALTABA PARA QUE NO CRASHEE
-  databaseHooks: {
-    account: {
-      update: {
-        after: async (account) => {
-          if (account?.userId) {
-            await prisma.user.update({
-              where: { id: account.userId },
-              data: {
-                discordId: String(account.providerAccountId),
-              },
-            });
-          }
-        },
-      },
-    },
-  },
 });
