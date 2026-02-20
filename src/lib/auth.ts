@@ -1,7 +1,13 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
+import { nextCookies } from "better-auth/next-js";
 
+/**
+ * 🔥 IMPORTANTE:
+ * Esto evita que Vercel cree 20 conexiones nuevas
+ * y evita crashes en producción.
+ */
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -27,6 +33,10 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  /**
+   * 🔥 SOLO campos que existen en tu schema prisma
+   * NO agregamos cosas extras que rompen el bundle.
+   */
   user: {
     additionalFields: {
       discordId: {
@@ -40,6 +50,10 @@ export const auth = betterAuth({
     discord: {
       clientId: process.env.DISCORD_CLIENT_ID as string,
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+
+      /**
+       * 🔥 Mapear perfil → DB
+       */
       mapProfileToUser: async (profile) => {
         return {
           discordId: profile.id,
@@ -48,6 +62,5 @@ export const auth = betterAuth({
     },
   },
 
-  // ⚠️ QUITAMOS nextCookies()
-  plugins: [],
+  plugins: [nextCookies()],
 });
