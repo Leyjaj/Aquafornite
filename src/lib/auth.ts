@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
-import { nextCookies } from "better-auth/next-js";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -49,5 +48,6 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [nextCookies()],
+  // ⚠️ QUITAMOS nextCookies()
+  plugins: [],
 });
