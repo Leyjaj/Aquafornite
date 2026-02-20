@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "npx prisma generate --no-engine --data-proxy",
+    "postinstall": "npx prisma generate",
     "dev": "next dev --turbopack",
     "build": "npx prisma generate && npx prisma db push && next build",
     "start": "next start",
