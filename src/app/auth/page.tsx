@@ -5,15 +5,22 @@ import { redirect } from "next/navigation";
 export const runtime = "nodejs";
 
 export default async function AuthPage() {
-  const session = await auth.api.getSession({
-    headers: headers(),
+
+  // 👇 Next 15 FIX
+  const incomingHeaders = await headers();
+  const hh = new Headers();
+
+  incomingHeaders.forEach((value, key) => {
+    hh.set(key, value);
   });
 
-  // ✅ Si tiene sesión → perfil
+  const session = await auth.api.getSession({
+    headers: hh,
+  });
+
   if (session) {
     redirect("/perfil");
   }
 
-  // ✅ Si NO tiene sesión → login
   redirect("/login");
 }
