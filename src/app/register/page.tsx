@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   async function crearCuenta() {
     const res = await authClient.signUp.email({
@@ -14,8 +16,17 @@ export default function RegisterPage() {
       name: "AquaUser",
     });
 
-    console.log(res);
-    alert("Cuenta creada");
+    if (res?.data?.user) {
+      // 🔥 login automático después de crear cuenta
+      await authClient.signIn.email({
+        email,
+        password,
+      });
+
+      router.push("/perfil");
+    } else {
+      alert("Error creando cuenta");
+    }
   }
 
   return (
