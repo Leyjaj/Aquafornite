@@ -5,8 +5,6 @@ import { redirect } from "next/navigation";
 export const runtime = "nodejs";
 
 export default async function AuthPage() {
-
-  // 👇 Next 15 FIX
   const incomingHeaders = await headers();
   const hh = new Headers();
 
@@ -18,9 +16,18 @@ export default async function AuthPage() {
     headers: hh,
   });
 
+  // ✅ SOLO si ya tiene sesión
   if (session) {
     redirect("/perfil");
   }
 
-  redirect("/login");
+  // ⚠️ IMPORTANTE:
+  // NO redirigimos a /login
+  // better-auth se encarga solo
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p>Loading auth...</p>
+    </div>
+  );
 }
