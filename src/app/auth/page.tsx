@@ -1,25 +1,33 @@
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { PrismaClient } from "@prisma/client";
 
-export default async function AuthPage() {
-  // 🔥 Next 15 headers async
-  const h = await headers();
+export const runtime = "nodejs";
 
-  const hh = new Headers();
-  h.forEach((v, k) => hh.set(k, v));
+const prisma = new PrismaClient();
 
+export async function GET() {
   const session = await auth.api.getSession({
-    headers: hh,
+    headers: await headers(),
   });
 
-  if (session) {
-    redirect("/perfil");
+  if (!session) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  return (
-    <div>
-      {/* Tu UI actual aquí */}
-    </div>
-  );
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      email: true,
+      aquacoins: true,
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+  }
+
+  return NextResponse.json(user);
 }
