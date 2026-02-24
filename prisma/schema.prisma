@@ -16,14 +16,9 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // 🔥 NECESARIO PARA LOGIN EMAIL/PASSWORD (BetterAuth)
-  password      String?
-
-  // Custom fields
   aquacoins Int     @default(0)
   discordId String? @unique
 
-  // Relations
   sessions         Session[]
   accounts         Account[]
   aquacoinsHistory AquacoinsHistory[]
@@ -55,9 +50,6 @@ model Account {
   refreshToken String?
   idToken      String?
   expiresAt    DateTime?
-
-  // ⚠️ puedes dejarlo, no rompe nada
-  password     String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
