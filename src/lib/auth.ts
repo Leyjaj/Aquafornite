@@ -3,11 +3,6 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
 import { nextCookies } from "better-auth/next-js";
 
-/**
- * 🔥 IMPORTANTE:
- * Esto evita que Vercel cree 20 conexiones nuevas
- * y evita crashes en producción.
- */
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -15,14 +10,22 @@ export const auth = betterAuth({
 
   secret: process.env.BETTER_AUTH_SECRET,
 
+  /**
+   * 🔥 ACTIVA EMAIL + PASSWORD CORRECTAMENTE
+   */
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false,
   },
 
   /**
-   * 🔥 SOLO campos que existen en tu schema prisma
-   * NO agregamos cosas extras que rompen el bundle.
+   * 🔥 IMPORTANTE
+   * BetterAuth necesita saber cómo guardar credenciales
    */
+  credential: {
+    enabled: true,
+  },
+
   user: {
     additionalFields: {
       discordId: {
@@ -37,9 +40,6 @@ export const auth = betterAuth({
       clientId: process.env.DISCORD_CLIENT_ID as string,
       clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
 
-      /**
-       * 🔥 Mapear perfil → DB
-       */
       mapProfileToUser: async (profile) => {
         return {
           discordId: profile.id,
