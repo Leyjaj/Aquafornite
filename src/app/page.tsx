@@ -13,15 +13,10 @@ export default function HomePage() {
   useEffect(() => {
     const browserLang = navigator.language;
 
-    if (browserLang.startsWith("pt-BR")) {
-      setLang("pt-BR");
-    } else if (browserLang === "es-ES") {
-      setLang("es-ES");
-    } else if (browserLang.startsWith("es")) {
-      setLang("es-LATAM");
-    } else {
-      setLang("en");
-    }
+    if (browserLang.startsWith("pt-BR")) setLang("pt-BR");
+    else if (browserLang === "es-ES") setLang("es-ES");
+    else if (browserLang.startsWith("es")) setLang("es-LATAM");
+    else setLang("en");
   }, []);
 
   return (
@@ -36,20 +31,14 @@ export default function HomePage() {
         </div>
 
         <div className="navbar-end gap-2 items-center">
-
-          <Link href="/cart" className="btn btn-ghost btn-sm text-white hover:bg-white/10">
-            🛒
-          </Link>
-
           {!session && (
             <Link
-              href="/login"
+              href="/auth/login"
               className="btn btn-sm border-0 bg-[#5865F2] hover:bg-[#4c58d6] text-white"
             >
-              {lang === "pt-BR" && "Entrar"}
-              {lang === "es-LATAM" && "Iniciar sesión"}
-              {lang === "es-ES" && "Iniciar sesión"}
-              {lang === "en" && "Sign in"}
+              {lang === "pt-BR" ? "Entrar" :
+               lang === "en" ? "Sign in" :
+               "Iniciar sesión"}
             </Link>
           )}
 
@@ -58,10 +47,7 @@ export default function HomePage() {
               href="/perfil"
               className="btn btn-sm border-0 bg-[#10B3C7] hover:bg-[#0EA2B4] text-white"
             >
-              {lang === "pt-BR" && "Perfil"}
-              {lang === "es-LATAM" && "Perfil"}
-              {lang === "es-ES" && "Perfil"}
-              {lang === "en" && "Profile"}
+              {lang === "en" ? "Profile" : "Perfil"}
             </Link>
           )}
 
@@ -69,17 +55,16 @@ export default function HomePage() {
             href="/shop"
             className="btn btn-sm border-0 bg-[#0B84D8] hover:bg-[#0A73BD] text-white"
           >
-            {lang === "pt-BR" && "Ir para loja"}
-            {lang === "es-LATAM" && "Ir a la tienda"}
-            {lang === "es-ES" && "Ir a la tienda"}
-            {lang === "en" && "Go to shop"}
+            {lang === "pt-BR" ? "Loja" :
+             lang === "en" ? "Shop" :
+             "Tienda"}
           </Link>
         </div>
       </div>
 
       {/* HERO */}
-      <section className="px-4 pt-24 flex-1">
-        <div className="mx-auto max-w-6xl py-10 md:py-14">
+      <section className="px-4 pt-24">
+        <div className="mx-auto max-w-6xl py-10">
           <h1 className="text-4xl md:text-5xl font-extrabold">
             {lang === "pt-BR" && "Compre skins e recarregue V-Bucks rápido e seguro"}
             {lang === "es-LATAM" && "Compra skins y recarga pavos rápido y seguro"}
@@ -88,32 +73,72 @@ export default function HomePage() {
           </h1>
 
           <p className="mt-4 text-white/70">
-            {lang === "pt-BR" && "Sistema seguro conectado com sessão ativa."}
-            {lang === "es-LATAM" && "Sistema seguro conectado con sesión activa."}
-            {lang === "es-ES" && "Sistema seguro conectado con sesión activa."}
-            {lang === "en" && "Secure system connected with active session."}
+            Sistema seguro conectado con sesión activa.
           </p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-[#040A3F] border-t border-white/10 py-6 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      {/* QUICK ACCESS GRID */}
+      <section className="px-4 py-10">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
 
-          <div className="text-white/60 text-sm">
-            © 2026 Aquafornais
+          <Link href="/pavos" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
+            💰 Pavos
+          </Link>
+
+          <Link href="/lotes" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
+            🎁 Lotes de pago
+          </Link>
+
+          <Link href="/otros-juegos" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
+            🎮 Recargar otros juegos
+          </Link>
+
+          <Link href="/skins" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
+            🧥 Skins
+          </Link>
+
+          <Link href="/cuentas-bots" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
+            🤖 Cuentas / Bots
+          </Link>
+
+          <Link href="/ofertas" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
+            🔥 Ofertas
+          </Link>
+
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-[#040A3F] border-t border-white/10 py-10 px-4 mt-auto">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-sm">
+
+          <div className="flex flex-col gap-2">
+            <Link href="/terminos" className="hover:text-white/80">Términos y condiciones</Link>
+            <Link href="/rembolsos" className="hover:text-white/80">Rembolsos</Link>
+            <Link href="/faq" className="hover:text-white/80">Preguntas frecuentes</Link>
           </div>
 
-          <div className="dropdown dropdown-top">
-            <button className="btn btn-sm bg-white/10 border-0 text-white hover:bg-white/20">
-              🌎 {lang}
-            </button>
-            <ul className="dropdown-content menu p-2 shadow bg-[#0b1c3f] rounded-box w-48 text-white">
-              <li><button onClick={() => setLang("en")}>🇺🇸 English</button></li>
-              <li><button onClick={() => setLang("pt-BR")}>🇧🇷 Português (Brasil)</button></li>
-              <li><button onClick={() => setLang("es-LATAM")}>🇲🇽 Español (Latam)</button></li>
-              <li><button onClick={() => setLang("es-ES")}>🇪🇸 Español (España)</button></li>
-            </ul>
+          <div className="flex flex-col gap-2">
+            <Link href="https://instagram.com" target="_blank" className="hover:text-white/80">Instagram</Link>
+            <Link href="https://tiktok.com" target="_blank" className="hover:text-white/80">TikTok</Link>
+            <Link href="https://discord.com" target="_blank" className="hover:text-white/80">Discord</Link>
+          </div>
+
+          <div className="flex flex-col gap-4 items-start md:items-end">
+            <div>© 2026 Aquafornais</div>
+
+            <div className="dropdown dropdown-top">
+              <button className="btn btn-sm bg-white/10 border-0 text-white hover:bg-white/20">
+                🌎 {lang}
+              </button>
+              <ul className="dropdown-content menu p-2 shadow bg-[#0b1c3f] rounded-box w-48 text-white">
+                <li><button onClick={() => setLang("en")}>🇺🇸 English</button></li>
+                <li><button onClick={() => setLang("pt-BR")}>🇧🇷 Português (Brasil)</button></li>
+                <li><button onClick={() => setLang("es-LATAM")}>🇲🇽 Español (Latam)</button></li>
+                <li><button onClick={() => setLang("es-ES")}>🇪🇸 Español (España)</button></li>
+              </ul>
+            </div>
           </div>
 
         </div>
