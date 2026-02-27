@@ -19,6 +19,75 @@ export default function HomePage() {
     else setLang("en");
   }, []);
 
+  const t = {
+    en: {
+      signIn: "Sign in",
+      profile: "Profile",
+      shop: "Shop",
+      heroTitle: "Buy skins and recharge V-Bucks fast and safe",
+      heroDesc: "Secure system connected with active session.",
+      pavos: "V-Bucks",
+      bundles: "Bundles",
+      recharge: "Recharge other games",
+      skins: "Skins",
+      bots: "Accounts / Bots",
+      offers: "Offers",
+      terms: "Terms and Conditions",
+      refunds: "Refund Policy",
+      faq: "Frequently Asked Questions"
+    },
+    "pt-BR": {
+      signIn: "Entrar",
+      profile: "Perfil",
+      shop: "Loja",
+      heroTitle: "Compre skins e recarregue V-Bucks rápido e seguro",
+      heroDesc: "Sistema seguro conectado com sessão ativa.",
+      pavos: "V-Bucks",
+      bundles: "Pacotes",
+      recharge: "Recarregar outros jogos",
+      skins: "Skins",
+      bots: "Contas / Bots",
+      offers: "Ofertas",
+      terms: "Termos e Condições",
+      refunds: "Política de Reembolso",
+      faq: "Perguntas Frequentes"
+    },
+    "es-LATAM": {
+      signIn: "Iniciar sesión",
+      profile: "Perfil",
+      shop: "Tienda",
+      heroTitle: "Compra skins y recarga pavos rápido y seguro",
+      heroDesc: "Sistema seguro conectado con sesión activa.",
+      pavos: "Pavos",
+      bundles: "Lotes",
+      recharge: "Recargar otros juegos",
+      skins: "Skins",
+      bots: "Cuentas / Bots",
+      offers: "Ofertas",
+      terms: "Términos y condiciones",
+      refunds: "Política de reembolsos",
+      faq: "Preguntas frecuentes"
+    },
+    "es-ES": {
+      signIn: "Iniciar sesión",
+      profile: "Perfil",
+      shop: "Tienda",
+      heroTitle: "Compra skins y recarga pavos rápido y seguro",
+      heroDesc: "Sistema seguro conectado con sesión activa.",
+      pavos: "Pavos",
+      bundles: "Lotes",
+      recharge: "Recargar otros juegos",
+      skins: "Skins",
+      bots: "Cuentas / Bots",
+      offers: "Ofertas",
+      terms: "Términos y condiciones",
+      refunds: "Política de reembolsos",
+      faq: "Preguntas frecuentes"
+    }
+  };
+
+  const text = t[lang];
+
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_left,_#0774BB_0%,_#052F6F_75%,_#040A3F_100%)] text-white flex flex-col">
 
@@ -36,9 +105,7 @@ export default function HomePage() {
               href="/auth/login"
               className="btn btn-sm border-0 bg-[#5865F2] hover:bg-[#4c58d6] text-white"
             >
-              {lang === "pt-BR" ? "Entrar" :
-               lang === "en" ? "Sign in" :
-               "Iniciar sesión"}
+              {text.signIn}
             </Link>
           )}
 
@@ -47,7 +114,7 @@ export default function HomePage() {
               href="/perfil"
               className="btn btn-sm border-0 bg-[#10B3C7] hover:bg-[#0EA2B4] text-white"
             >
-              {lang === "en" ? "Profile" : "Perfil"}
+              {text.profile}
             </Link>
           )}
 
@@ -55,9 +122,7 @@ export default function HomePage() {
             href="/shop"
             className="btn btn-sm border-0 bg-[#0B84D8] hover:bg-[#0A73BD] text-white"
           >
-            {lang === "pt-BR" ? "Loja" :
-             lang === "en" ? "Shop" :
-             "Tienda"}
+            {text.shop}
           </Link>
         </div>
       </div>
@@ -66,44 +131,40 @@ export default function HomePage() {
       <section className="px-4 pt-24">
         <div className="mx-auto max-w-6xl py-10">
           <h1 className="text-4xl md:text-5xl font-extrabold">
-            {lang === "pt-BR" && "Compre skins e recarregue V-Bucks rápido e seguro"}
-            {lang === "es-LATAM" && "Compra skins y recarga pavos rápido y seguro"}
-            {lang === "es-ES" && "Compra skins y recarga pavos rápido y seguro"}
-            {lang === "en" && "Buy skins and recharge V-Bucks fast and safe"}
+            {text.heroTitle}
           </h1>
-
           <p className="mt-4 text-white/70">
-            Sistema seguro conectado con sesión activa.
+            {text.heroDesc}
           </p>
         </div>
       </section>
 
-      {/* QUICK ACCESS GRID */}
+      {/* QUICK ACCESS */}
       <section className="px-4 py-10">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
 
           <Link href="/pavos" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            💰 Pavos
+            {text.pavos}
           </Link>
 
           <Link href="/lotes" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            🎁 Lotes de pago
+            {text.bundles}
           </Link>
 
           <Link href="/otros-juegos" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            🎮 Recargar otros juegos
+            {text.recharge}
           </Link>
 
           <Link href="/skins" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            🧥 Skins
+            {text.skins}
           </Link>
 
           <Link href="/cuentas-bots" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            🤖 Cuentas / Bots
+            {text.bots}
           </Link>
 
           <Link href="/ofertas" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            🔥 Ofertas
+            {text.offers}
           </Link>
 
         </div>
@@ -114,29 +175,25 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-sm">
 
           <div className="flex flex-col gap-2">
-            <Link href="/terminos" className="hover:text-white/80">Términos y condiciones</Link>
-            <Link href="/rembolsos" className="hover:text-white/80">Rembolsos</Link>
-            <Link href="/faq" className="hover:text-white/80">Preguntas frecuentes</Link>
+            <Link href="/terminos">{text.terms}</Link>
+            <Link href="/rembolsos">{text.refunds}</Link>
+            <Link href="/faq">{text.faq}</Link>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Link href="https://instagram.com" target="_blank" className="hover:text-white/80">Instagram</Link>
-            <Link href="https://tiktok.com" target="_blank" className="hover:text-white/80">TikTok</Link>
-            <Link href="https://discord.com" target="_blank" className="hover:text-white/80">Discord</Link>
-          </div>
+          <div></div>
 
           <div className="flex flex-col gap-4 items-start md:items-end">
             <div>© 2026 Aquafornais</div>
 
             <div className="dropdown dropdown-top">
               <button className="btn btn-sm bg-white/10 border-0 text-white hover:bg-white/20">
-                🌎 {lang}
+                {lang}
               </button>
               <ul className="dropdown-content menu p-2 shadow bg-[#0b1c3f] rounded-box w-48 text-white">
-                <li><button onClick={() => setLang("en")}>🇺🇸 English</button></li>
-                <li><button onClick={() => setLang("pt-BR")}>🇧🇷 Português (Brasil)</button></li>
-                <li><button onClick={() => setLang("es-LATAM")}>🇲🇽 Español (Latam)</button></li>
-                <li><button onClick={() => setLang("es-ES")}>🇪🇸 Español (España)</button></li>
+                <li><button onClick={() => setLang("en")}>English</button></li>
+                <li><button onClick={() => setLang("pt-BR")}>Português (Brasil)</button></li>
+                <li><button onClick={() => setLang("es-LATAM")}>Español (Latam)</button></li>
+                <li><button onClick={() => setLang("es-ES")}>Español (España)</button></li>
               </ul>
             </div>
           </div>
