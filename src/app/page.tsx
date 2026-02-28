@@ -27,11 +27,12 @@ export default function HomePage() {
       heroTitle: "Buy skins and recharge V-Bucks fast and safe",
       heroDesc: "Secure system connected with active session.",
       pavos: "V-Bucks",
-      bundles: "Bundles",
+      bundles: "Money Bundles",
       recharge: "Recharge other games",
       skins: "Skins",
       bots: "Accounts / Bots",
       offers: "Offers",
+      club: "Fortnite Club",
       terms: "Terms and Conditions",
       refunds: "Refund Policy",
       faq: "Frequently Asked Questions"
@@ -43,11 +44,12 @@ export default function HomePage() {
       heroTitle: "Compre skins e recarregue V-Bucks rápido e seguro",
       heroDesc: "Sistema seguro conectado com sessão ativa.",
       pavos: "V-Bucks",
-      bundles: "Pacotes",
+      bundles: "Pacotes de Dinheiro",
       recharge: "Recarregar outros jogos",
       skins: "Skins",
       bots: "Contas / Bots",
       offers: "Ofertas",
+      club: "Clube Fortnite",
       terms: "Termos e Condições",
       refunds: "Política de Reembolso",
       faq: "Perguntas Frequentes"
@@ -59,11 +61,12 @@ export default function HomePage() {
       heroTitle: "Compra skins y recarga pavos rápido y seguro",
       heroDesc: "Sistema seguro conectado con sesión activa.",
       pavos: "Pavos",
-      bundles: "Lotes",
+      bundles: "Lotes de dinero",
       recharge: "Recargar otros juegos",
       skins: "Skins",
       bots: "Cuentas / Bots",
       offers: "Ofertas",
+      club: "Club Fortnite",
       terms: "Términos y condiciones",
       refunds: "Política de reembolsos",
       faq: "Preguntas frecuentes"
@@ -75,11 +78,12 @@ export default function HomePage() {
       heroTitle: "Compra skins y recarga pavos rápido y seguro",
       heroDesc: "Sistema seguro conectado con sesión activa.",
       pavos: "Pavos",
-      bundles: "Lotes",
+      bundles: "Lotes de dinero",
       recharge: "Recargar otros juegos",
       skins: "Skins",
       bots: "Cuentas / Bots",
       offers: "Ofertas",
+      club: "Club Fortnite",
       terms: "Términos y condiciones",
       refunds: "Política de reembolsos",
       faq: "Preguntas frecuentes"
@@ -87,6 +91,9 @@ export default function HomePage() {
   };
 
   const text = t[lang];
+
+  const cardStyle =
+    "bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 hover:shadow-2xl";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_left,_#0774BB_0%,_#052F6F_75%,_#040A3F_100%)] text-white flex flex-col">
@@ -143,29 +150,13 @@ export default function HomePage() {
       <section className="px-4 py-10">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
 
-          <Link href="/pavos" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            {text.pavos}
-          </Link>
-
-          <Link href="/lotes" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            {text.bundles}
-          </Link>
-
-          <Link href="/otros-juegos" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            {text.recharge}
-          </Link>
-
-          <Link href="/skins" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            {text.skins}
-          </Link>
-
-          <Link href="/cuentas-bots" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            {text.bots}
-          </Link>
-
-          <Link href="/ofertas" className="bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition">
-            {text.offers}
-          </Link>
+          <Link href="/pavos" className={cardStyle}>{text.pavos}</Link>
+          <Link href="/lotes" className={cardStyle}>{text.bundles}</Link>
+          <Link href="/club" className={cardStyle}>{text.club}</Link>
+          <Link href="/otros-juegos" className={cardStyle}>{text.recharge}</Link>
+          <Link href="/skins" className={cardStyle}>{text.skins}</Link>
+          <Link href="/cuentas-bots" className={cardStyle}>{text.bots}</Link>
+          <Link href="/ofertas" className={cardStyle}>{text.offers}</Link>
 
         </div>
       </section>
