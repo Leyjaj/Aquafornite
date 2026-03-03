@@ -1,35 +1,37 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
+type Pack = {
+  amount: number;
+  price: number;
+  image: string;
+  extra?: string;
+  theme: "green" | "blue" | "purple" | "orange";
+};
 
 export default function PavosPage() {
-  const router = useRouter();
-  const { data: session } = useSession();
-
-  const packs = [
-    { amount: 1000, price: 5.5, color: "from-blue-500 to-blue-700" },
-    { amount: 2800, price: 13, color: "from-purple-500 to-purple-700" },
-    { amount: 5000, price: 24, color: "from-green-500 to-green-700" },
-    { amount: 13500, price: 55, color: "from-yellow-500 to-orange-500" },
+  const packs: Pack[] = [
+    { amount: 1000, price: 5.5, image: "/pavos/1000-pavos.jpg", theme: "green" },
+    { amount: 2800, price: 13, image: "/pavos/2800-pavos.jpg", theme: "blue", extra: "9% EXTRA*" },
+    { amount: 5000, price: 24, image: "/pavos/5000-pavos.jpg", theme: "purple", extra: "22% EXTRA*" },
+    { amount: 13500, price: 55, image: "/pavos/13500-pavos.jpg", theme: "orange", extra: "35% EXTRA*" },
   ];
 
-  const handleCheckout = async (pack: any) => {
-    if (!session?.user?.id) {
-      router.push("/auth/login");
-      return;
-    }
+  const themeClass: Record<Pack["theme"], string> = {
+    green: "from-green-500 to-green-700",
+    blue: "from-sky-500 to-blue-700",
+    purple: "from-fuchsia-500 to-purple-800",
+    orange: "from-orange-500 to-amber-700",
+  };
 
+  const handleCheckout = async (pack: Pack) => {
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        userId: session.user.id,
         items: [
           {
             id: `pavos_${pack.amount}`,
             name: `${pack.amount} Pavos`,
-            images: "https://i.imgur.com/YOUR_IMAGE.png",
             price: pack.price,
             quantity: 1,
           },
@@ -43,27 +45,51 @@ export default function PavosPage() {
 
   return (
     <main className="min-h-screen bg-[#0A1F44] text-white px-4 py-16">
-      <h1 className="text-4xl font-bold mb-12 text-center">
+      <h1 className="text-4xl font-extrabold mb-12 text-center">
         Recarga de Pavos
       </h1>
 
-      <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-6">
+      <div className="max-w-6xl mx-auto grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {packs.map((pack) => (
           <div
             key={pack.amount}
-            className={`bg-gradient-to-br ${pack.color} p-6 rounded-2xl shadow-xl hover:scale-105 hover:-translate-y-1 hover:shadow-2xl transition-all duration-300`}
+            className={`rounded-3xl shadow-2xl bg-gradient-to-b ${themeClass[pack.theme]} p-6 flex flex-col`}
           >
-            <h2 className="text-2xl font-bold">
-              {pack.amount} Pavos
-            </h2>
+            {pack.extra && (
+              <div className="bg-white text-black font-bold px-4 py-1 rounded-full text-sm self-start mb-4">
+                {pack.extra}
+              </div>
+            )}
 
-            <p className="text-xl mt-2">
-              ${pack.price} USD
-            </p>
+            <div className="rounded-2xl overflow-hidden h-[300px] sm:h-[320px] mb-6 bg-black/15">
+              <div
+                className="w-full h-full bg-center bg-cover"
+                style={{
+                  backgroundImage: `url(${pack.image})`,
+                  transform: "scale(1.15)",
+                }}
+              />
+            </div>
+
+            <div className="text-center mb-6">
+              <div className="text-4xl font-extrabold">
+                {pack.amount.toLocaleString()}
+              </div>
+              <div className="text-xl font-bold tracking-wide">
+                PAVOS
+              </div>
+            </div>
 
             <button
               onClick={() => handleCheckout(pack)}
-              className="mt-6 w-full bg-black/30 hover:bg-black/50 rounded-lg py-2 font-semibold transition"
+              className="w-full rounded-2xl bg-yellow-300 text-black font-extrabold text-lg py-3 hover:brightness-95 transition mb-4"
+            >
+              ${pack.price} USD
+            </button>
+
+            <button
+              onClick={() => handleCheckout(pack)}
+              className="w-full rounded-xl bg-black/25 hover:bg-black/35 font-semibold py-3 transition mt-auto"
             >
               Comprar
             </button>

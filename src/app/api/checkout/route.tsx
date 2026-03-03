@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         currency: 'usd',
         product_data: {
           name: item.name,
-          images: [item.images]
+          ...(item.images ? { images: [item.images] } : {})
         },
         unit_amount: Math.round(item.price * 100),
       },
