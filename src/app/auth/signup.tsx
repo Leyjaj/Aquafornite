@@ -1,0 +1,9 @@
+import { SignUp } from '@clerk/nextjs';
+
+export default function SignUpPage() {
+  return (
+    <main className="flex items-center justify-center min-h-screen">
+      <SignUp path="/auth/sign-up" routing="path" signInUrl="/auth/sign-in" />
+    </main>
+  );
+}

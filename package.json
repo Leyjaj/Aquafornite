@@ -13,7 +13,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.2.1",
+    "@clerk/nextjs": "^6.38.2",
     "@opentelemetry/api": "^1.9.0",
     "@prisma/adapter-d1": "^6.19.0",
     "@prisma/client": "^6.18.0",
@@ -27,12 +27,12 @@
     "date-fns": "^4.1.0",
     "esbuild": "^0.25.5",
     "mysql2": "^3.15.0",
-    "next": "15.5.7",
+    "next": "^16.1.6",
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.6",
     "nextjs-toast-notify": "^1.38.0",
-    "react": "19.1.2",
-    "react-dom": "19.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "stripe": "^18.5.0",
     "swr": "^2.3.6",
     "zustand": "^5.0.4"
@@ -44,12 +44,12 @@
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "daisyui": "^5.2.3",
     "prisma": "^6.18.0",
     "tailwindcss": "^4.1.6",
     "typescript": "^5",
-    "wrangler": "^4.19.2"
+    "wrangler": "^3.114.17"
   }
 }

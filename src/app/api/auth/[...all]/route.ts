@@ -1,10 +1,10 @@
-import { auth } from "@/lib/auth";
+import { withClerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-/**
- * ❌ NO EDGE
- * Edge rompe prisma y hace crecer el bundle.
- */
-export const runtime = "nodejs";
+// Esto aplica el middleware de Clerk a las rutas de autenticación
+export default withClerkMiddleware(() => NextResponse.next());
 
-export const GET = auth.handler;
-export const POST = auth.handler;
+// Configuración del matcher para proteger las rutas relacionadas con autenticación
+export const config = {
+  matcher: ['/api/auth/(.*)', '/auth/(.*)'], // Proteger todas las rutas relacionadas con auth
+};
