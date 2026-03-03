@@ -1,28 +1,43 @@
-// src/app/layout.tsx
-
-import { ClerkProvider } from '@clerk/nextjs';
-import { Space_Grotesk } from 'next/font/google';
-import { UserProvider } from '@/hooks/useUser';
-import { CurrencyProvider } from '@/hooks/useCurrency';
-import { clerkClient } from '@/lib/auth-client'; // Asegúrate de importar el cliente Clerk si lo necesitas
+import type { Metadata } from "next";
+import {  Space_Grotesk } from "next/font/google";
+import { signOut, useSession } from "@/lib/auth-client";
+import "./globals.css";
+import { UserProvider } from "@/hooks/useUser";
+import { CurrencyProvider } from "@/hooks/useCurrency";
 
 const SpaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
-  subsets: ['latin'],
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
 });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: "Aquafornais",
+  description: "uwu",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+
+  
   return (
-    <ClerkProvider client={clerkClient}>
-      <html lang="en">
-        <body className={`${SpaceGrotesk.variable} antialiased`}>
-          <UserProvider>
-            <CurrencyProvider>
-              {children}
-            </CurrencyProvider>
-          </UserProvider>
+    
+      
+      <html lang="en" suppressHydrationWarning={true}   >
+        <body
+          className={`${SpaceGrotesk.variable}  antialiased`}
+        >                 
+
+            <UserProvider>
+                <CurrencyProvider>
+                {children}    
+                </CurrencyProvider>
+            </UserProvider>      
         </body>
       </html>
-    </ClerkProvider>
+      
+    
   );
 }
