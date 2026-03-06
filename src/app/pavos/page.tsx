@@ -44,7 +44,7 @@ export default function PavosPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0A1F44] text-white px-4 py-16">
+    <main className="min-h-screen text-white px-4 py-16">
       <h1 className="text-4xl font-extrabold mb-12 text-center">
         Recarga de Pavos
       </h1>

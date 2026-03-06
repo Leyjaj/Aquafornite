@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import {  Space_Grotesk } from "next/font/google";
-import { signOut, useSession } from "@/lib/auth-client";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/hooks/useUser";
 import { CurrencyProvider } from "@/hooks/useCurrency";
+import Header from "@/components/Header";
 
 const SpaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -17,27 +17,24 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-
-  
+}) {
   return (
-    
-      
-      <html lang="en" suppressHydrationWarning={true}   >
-        <body
-          className={`${SpaceGrotesk.variable}  antialiased`}
-        >                 
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${SpaceGrotesk.variable} antialiased bg-[#0A1F44]`}>
+        <UserProvider>
+          <CurrencyProvider>
 
-            <UserProvider>
-                <CurrencyProvider>
-                {children}    
-                </CurrencyProvider>
-            </UserProvider>      
-        </body>
-      </html>
-      
-    
+            <Header />
+
+            <div className="pt-24">
+              {children}
+            </div>
+
+          </CurrencyProvider>
+        </UserProvider>
+      </body>
+    </html>
   );
 }
