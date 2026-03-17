@@ -14,7 +14,6 @@
 @plugin "daisyui"{
   themes: light --default, dark --prefersdark,corporate;
   exclude: checkbox, footer, typography, glass, rootcolor, rootscrollgutter;
-
 };
 
 .inputs:focus{
@@ -24,8 +23,8 @@
 
 body {
   font-family: 'Space Grotesk', 'Roboto', sans-serif;
-  
 }
+
 select{
   &:focus,
   &:focus-within {
@@ -51,16 +50,40 @@ select{
       }
       &:active{
         @apply bg-blue-500 text-neutral-content;
-        
       }
     }
-    
   }
 }
+
 select::picker(select){  
   border:none;
   border-radius:8px;  
   background:#052F6F/100;
   backdrop-filter: blur(40px);
   box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
 }

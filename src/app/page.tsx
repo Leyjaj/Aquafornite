@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
+import PaymentMarquee from "@/components/PaymentMarquee";
 
 type Lang = "en" | "es" | "pt";
 
@@ -77,7 +78,6 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_left,_#0774BB_0%,_#052F6F_75%,_#040A3F_100%)] text-white flex flex-col">
 
-      {/* HERO */}
       <section className="px-4 pt-16">
         <div className="mx-auto max-w-6xl py-10">
           <h1 className="text-4xl md:text-5xl font-extrabold">
@@ -89,11 +89,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* QUICK ACCESS */}
       <section className="px-4 py-10">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
 
-          {/* BOTON PRINCIPAL */}
           <Link href="/shop" className={featuredCard}>
             <div className="absolute top-2 right-3 text-xs bg-orange-500 text-white px-2 py-1 rounded-full">
               {text.featured}
@@ -111,7 +109,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      <PaymentMarquee />
+
       <footer className="bg-[#040A3F] border-t border-white/10 py-10 px-4 mt-auto">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-sm">
 

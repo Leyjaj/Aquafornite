@@ -18,7 +18,6 @@ interface Props {
 }
 
 export default function SkinGridInfinite({ groupedSkins }: Props) {
-  // 🔹 Si por cualquier razón viene vacío/undefined, salimos
   if (!groupedSkins || Object.keys(groupedSkins).length === 0) {
     return null;
   }
@@ -27,7 +26,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   const [visibleCount, setVisibleCount] = useState(4);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useIsMobile();
-  const { currency, rates } = useCurrency();
+  const { currency } = useCurrency();
   const { addItem } = useSkinCart();
 
   const sizeSkin: Record<string, string> = {
@@ -37,13 +36,6 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
     Size_1_x_1: "col-span-1",
   };
 
-  const scaleSkin: Record<string, string> = {
-    Size_4_x_1: "scale-115",
-    Size_3_x_1: "",
-    Size_2_x_1: "translate-y-[10%] scale-120 h-[320px] md:h-[450px]",
-    Size_1_x_1: "translate-x-[-20%] translate-y-[10%] scale-115",
-  };
-
   const heightByTile: Record<string, string> = {
     Size_4_x_1: "h-[400px] md:h-[550px]",
     Size_3_x_1: "h-[380px] md:h-[500px]",
@@ -51,7 +43,19 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
     Size_1_x_1: "h-[280px] md:h-[380px]",
   };
 
-  // Infinite scroll
+  const pricePer100: Record<string, number> = {
+    USD: 0.36,
+    MXN: 6.5,
+    PEN: 1.3,
+    EUR: 0.32,
+    COP: 1300,
+    CLP: 330,
+    BOB: 2.5,
+    BRL: 1.9,
+  };
+
+  const pricePerVbuck = (pricePer100[currency] ?? 0.36) / 100;
+
   useEffect(() => {
     if (!observerRef.current) return;
     if (categories.length === 0) return;
@@ -76,25 +80,26 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
 
   const getBackgroundStyle = (skin: Skin) => {
     const colors = skin?.colors;
-    if (!colors) {
-      return { background: "#333" };
-    }
+    if (!colors) return { background: "#333" };
 
     const colorStops: string[] = [];
     if (colors.color1) colorStops.push(`#${colors.color1}`);
     if (colors.color2) colorStops.push(`#${colors.color2}`);
     if (colors.color3) colorStops.push(`#${colors.color3}`);
 
-    if (colorStops.length === 0) {
-      return { background: "#333" };
-    }
+    if (colorStops.length === 0) return { background: "#333" };
 
     return {
       background: `linear-gradient(to bottom, ${colorStops.join(", ")})`,
     };
   };
 
-  const currencyPrice = 0.0036 * ((rates && rates[currency]) ?? 1);
+  const formatPrice = (value: number) => {
+    return new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
 
   return (
     <section className="p-6">
@@ -102,10 +107,9 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
         <div className="flex flex-col" key={key}>
           <h2 className="text-3xl font-semibold mt-8 text-white">{key}</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4 justify-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
             {Array.isArray(value?.skins) &&
               value.skins.map((skin, idx) => {
-                // 🔹 Aseguramos que renderImages y tracks sean arrays
                 const renderImages = Array.isArray(
                   (skin as any)?.newDisplayAsset?.renderImages
                 )
@@ -119,10 +123,7 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                 const imageSrc =
                   renderImages[0]?.image ?? tracks[0]?.albumArt ?? null;
 
-                // Si no hay imagen, no pintamos esta card
-                if (!imageSrc) {
-                  return null;
-                }
+                if (!imageSrc) return null;
 
                 const tileSize = (skin as any).tileSize || "Size_1_x_1";
 
@@ -134,62 +135,57 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                   "Skin";
 
                 const finalPrice = (skin as any)?.finalPrice ?? 0;
+                const converted = finalPrice * pricePerVbuck;
+
+                const skinWithPrice = {
+                  ...skin,
+                  customPrice: parseFloat(converted.toFixed(2)),
+                  currency,
+                };
 
                 return (
                   <div
                     key={idx}
                     onClick={() => {
-                      if (isMobile) addItem(skin);
+                      if (isMobile) addItem(skinWithPrice as any);
                     }}
                     className={`${
                       sizeSkin[tileSize] ?? "col-span-1"
-                    } group rounded-xl overflow-hidden outline-[4px] outline-transparent hover:outline-blue-100 transition-all duration-300 ease-in-out card image-full flex-shrink-0 w-full h-[280px] md:h-[450px] relative cursor-pointer shadow-[0px_0px_80px_-44px_rgba(0,_0,_0,_0.7)]`}
+                    } group rounded-xl overflow-hidden outline-[4px] outline-transparent hover:outline-blue-100 transition-all duration-300 ease-in-out flex flex-col w-full ${
+                      heightByTile[tileSize]
+                    } relative cursor-pointer shadow-[0px_0px_80px_-44px_rgba(0,_0,_0,_0.7)]`}
                     style={getBackgroundStyle(skin)}
                   >
-                    <div
-                      className={`relative aspect-[1/.76] w-full ${
-                        heightByTile[tileSize] ?? "h-[280px] md:h-[380px]"
-                      }`}
-                    >
+                    <div className="relative w-full flex-1 flex items-center justify-center p-4 overflow-hidden">
                       <Image
                         fill
-                        // mejor usar className en lugar de objectFit prop
-                        className={`z-0 transition-transform duration-700 ease-out ${
-                          scaleSkin[tileSize] ?? ""
-                        } ${
-                          tileSize === "Size_3_x_1"
-                            ? "object-cover"
-                            : "object-contain"
-                        }`}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/Tj7XngAAAABJRU5ErkJggg=="
                         src={imageSrc}
                         alt={displayName}
+                        className={`object-contain object-center transition-transform duration-500 group-hover:scale-105 ${
+                          tileSize === "Size_1_x_1" ? "scale-110" : ""
+                        } ${
+                          tileSize === "Size_2_x_1" ? "scale-105" : ""
+                        } ${
+                          tileSize === "Size_4_x_1" ? "scale-95" : ""
+                        }`}
                       />
                     </div>
 
-                    <div
-                      className={`w-full pl-2 pr-2 pb-10 ${
-                        isMobile ? "-translate-y-7" : "translate-y-8"
-                      } absolute bg-gradient-to-t from-zinc-900 to-transparent bottom-[-50] z-9 pb-2 group-hover:-translate-y-8 transition-transform duration-300`}
-                    >
-                      <div className="flex flex-col ml-5 mb-5">
-                        <span className="text-white font-semibold text-xl truncate ellipsis">
+                    <div className="w-full px-4 pb-4 bg-gradient-to-t from-zinc-900/90 to-transparent">
+                      <div className="flex flex-col">
+                        <span className="text-white font-semibold text-lg truncate">
                           {displayName}
                         </span>
-                        <span className="text-white/75 text-lg">
+                        <span className="text-white/75 text-sm">
                           {finalPrice} V-BUCKS -{" "}
-                          {parseFloat(
-                            (finalPrice * currencyPrice).toFixed(2)
-                          )}{" "}
-                          {currency}
+                          {formatPrice(converted)} {currency}
                         </span>
                       </div>
 
                       {!isMobile && (
                         <button
-                          onClick={() => addItem(skin)}
-                          className="btn mt-2 w-full btn-primary text-white font-medium transition-colors"
+                          onClick={() => addItem(skinWithPrice as any)}
+                          className="btn mt-2 w-full btn-primary text-white font-medium"
                         >
                           Agregar al carrito
                         </button>
@@ -202,7 +198,6 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
         </div>
       ))}
 
-      {/* Sentinel para infinite scroll */}
       {visibleCount < categories.length && (
         <div ref={observerRef} className="h-16 mt-8" />
       )}
