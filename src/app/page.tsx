@@ -4,18 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 
-type Lang = "en" | "pt-BR" | "es-LATAM" | "es-ES";
+type Lang = "en" | "es" | "pt";
 
 export default function HomePage() {
   const { data: session } = useSession();
   const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
-    const browserLang = navigator.language;
+    const browserLang = navigator.language.toLowerCase();
 
-    if (browserLang.startsWith("pt-BR")) setLang("pt-BR");
-    else if (browserLang === "es-ES") setLang("es-ES");
-    else if (browserLang.startsWith("es")) setLang("es-LATAM");
+    if (browserLang.startsWith("pt")) setLang("pt");
+    else if (browserLang.startsWith("es")) setLang("es");
     else setLang("en");
   }, []);
 
@@ -26,62 +25,54 @@ export default function HomePage() {
       pavos: "V-Bucks",
       bundles: "Money Bundles",
       recharge: "Recharge other games",
-      skins: "Skins",
+      skins: "Skins 👕👖",
       bots: "Accounts / Bots",
       offers: "Offers",
       club: "Fortnite Club",
       terms: "Terms and Conditions",
       refunds: "Refund Policy",
-      faq: "Frequently Asked Questions"
+      faq: "Frequently Asked Questions",
+      featured: "🔥 Best Seller"
     },
-    "pt-BR": {
+    es: {
+      heroTitle: "Compra skins y recarga pavos rápido y seguro",
+      heroDesc: "Sistema seguro conectado con sesión activa.",
+      pavos: "Pavos",
+      bundles: "Lotes de dinero",
+      recharge: "Recargar otros juegos",
+      skins: "Skins 👕👖",
+      bots: "Cuentas / Bots",
+      offers: "Ofertas",
+      club: "Club Fortnite",
+      terms: "Términos y condiciones",
+      refunds: "Política de reembolsos",
+      faq: "Preguntas frecuentes",
+      featured: "🔥 Más vendido"
+    },
+    pt: {
       heroTitle: "Compre skins e recarregue V-Bucks rápido e seguro",
       heroDesc: "Sistema seguro conectado com sessão ativa.",
       pavos: "V-Bucks",
       bundles: "Pacotes de Dinheiro",
       recharge: "Recarregar outros jogos",
-      skins: "Skins",
+      skins: "Skins 👕👖",
       bots: "Contas / Bots",
       offers: "Ofertas",
       club: "Clube Fortnite",
       terms: "Termos e Condições",
       refunds: "Política de Reembolso",
-      faq: "Perguntas Frequentes"
-    },
-    "es-LATAM": {
-      heroTitle: "Compra skins y recarga pavos rápido y seguro",
-      heroDesc: "Sistema seguro conectado con sesión activa.",
-      pavos: "Pavos",
-      bundles: "Lotes de dinero",
-      recharge: "Recargar otros juegos",
-      skins: "Skins",
-      bots: "Cuentas / Bots",
-      offers: "Ofertas",
-      club: "Club Fortnite",
-      terms: "Términos y condiciones",
-      refunds: "Política de reembolsos",
-      faq: "Preguntas frecuentes"
-    },
-    "es-ES": {
-      heroTitle: "Compra skins y recarga pavos rápido y seguro",
-      heroDesc: "Sistema seguro conectado con sesión activa.",
-      pavos: "Pavos",
-      bundles: "Lotes de dinero",
-      recharge: "Recargar otros juegos",
-      skins: "Skins",
-      bots: "Cuentas / Bots",
-      offers: "Ofertas",
-      club: "Club Fortnite",
-      terms: "Términos y condiciones",
-      refunds: "Política de reembolsos",
-      faq: "Preguntas frecuentes"
+      faq: "Perguntas Frequentes",
+      featured: "🔥 Mais vendido"
     }
   };
 
-  const text = t[lang];
+  const text = t[lang] ?? t.en;
 
   const cardStyle =
-    "bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition-all duration-300 ease-out hover:scale-105 hover:-translate-y-1 hover:shadow-2xl";
+    "bg-white/10 hover:bg-white/20 p-6 rounded-2xl text-center transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-2xl";
+
+  const featuredCard =
+    "relative col-span-2 md:col-span-2 bg-gradient-to-br from-blue-400/40 to-blue-700/40 border border-blue-300/40 p-8 rounded-2xl text-center font-bold text-xl transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-2xl";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_left,_#0774BB_0%,_#052F6F_75%,_#040A3F_100%)] text-white flex flex-col">
@@ -102,11 +93,18 @@ export default function HomePage() {
       <section className="px-4 py-10">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
 
+          {/* BOTON PRINCIPAL */}
+          <Link href="/shop" className={featuredCard}>
+            <div className="absolute top-2 right-3 text-xs bg-orange-500 text-white px-2 py-1 rounded-full">
+              {text.featured}
+            </div>
+            {text.skins}
+          </Link>
+
           <Link href="/pavos" className={cardStyle}>{text.pavos}</Link>
           <Link href="/lotes" className={cardStyle}>{text.bundles}</Link>
           <Link href="/club" className={cardStyle}>{text.club}</Link>
           <Link href="/otros-juegos" className={cardStyle}>{text.recharge}</Link>
-          <Link href="/skins" className={cardStyle}>{text.skins}</Link>
           <Link href="/cuentas-bots" className={cardStyle}>{text.bots}</Link>
           <Link href="/ofertas" className={cardStyle}>{text.offers}</Link>
 
@@ -130,14 +128,15 @@ export default function HomePage() {
 
             <div className="dropdown dropdown-top">
               <button className="btn btn-sm bg-white/10 border-0 text-white hover:bg-white/20">
-                {lang}
+                {lang.toUpperCase()}
               </button>
+
               <ul className="dropdown-content menu p-2 shadow bg-[#0b1c3f] rounded-box w-48 text-white">
                 <li><button onClick={() => setLang("en")}>English</button></li>
-                <li><button onClick={() => setLang("pt-BR")}>Português (Brasil)</button></li>
-                <li><button onClick={() => setLang("es-LATAM")}>Español (Latam)</button></li>
-                <li><button onClick={() => setLang("es-ES")}>Español (España)</button></li>
+                <li><button onClick={() => setLang("es")}>Español</button></li>
+                <li><button onClick={() => setLang("pt")}>Português</button></li>
               </ul>
+
             </div>
           </div>
 

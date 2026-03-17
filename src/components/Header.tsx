@@ -12,10 +12,15 @@ import Skin from "@/interfaces/skin.interface";
 import { useCurrency } from "@/hooks/useCurrency";
 
 const countryOptions = [
-    { id: "usd", label: "DOLAR", icon: <Icon icon="emojione-v1:flag-for-united-states" fontSize={28} style={{ color: 'white' }} /> },
-    { id: "mx", label: "MXN", icon: <Icon icon="emojione-v1:flag-for-mexico" fontSize={28} style={{ color: 'white' }} /> },
-    { id: "sol", label: "PEN", icon: <Icon icon="emojione-v1:flag-for-peru" fontSize={28} style={{ color: 'white' }} /> },
-]
+  { id: "usd", label: "USD", icon: <Icon icon="twemoji:flag-united-states" width="22" /> },
+  { id: "mxn", label: "MXN", icon: <Icon icon="twemoji:flag-mexico" width="22" /> },
+  { id: "pen", label: "PEN", icon: <Icon icon="twemoji:flag-peru" width="22" /> },
+  { id: "clp", label: "CLP", icon: <Icon icon="twemoji:flag-chile" width="22" /> },
+  { id: "cop", label: "COP", icon: <Icon icon="twemoji:flag-colombia" width="22" /> },
+  { id: "bob", label: "BOB", icon: <Icon icon="twemoji:flag-bolivia" width="22" /> },
+  { id: "eur", label: "EUR", icon: <Icon icon="twemoji:flag-european-union" width="22" /> },
+  { id: "brl", label: "BRL", icon: <Icon icon="twemoji:flag-brazil" width="22" /> },
+];
 
 const Header = () => {
 
@@ -59,7 +64,7 @@ const Header = () => {
     }
 
     const handleCountryChange = (value: any) => {
-        console.log("País seleccionado:", value.id)
+        console.log("Moneda seleccionada:", value.id)
     }
 
     const handleSignOut = async () => {
@@ -90,13 +95,12 @@ const Header = () => {
 
     return (
 
-        <div className="fixed z-1000 w-full flex flex-row items-center justify-between bg-black/10 backdrop-blur-md navbar shadow-sm px-8 z-3">
+        <div className="fixed z-1000 w-full flex flex-row items-center justify-between bg-black/10 backdrop-blur-md navbar shadow-sm px-8">
 
             <div className="flex items-center">
 
                 <div className="flex-1 flex-row items-center justify-center mt-2">
 
-                    {/* LOGO → AHORA MANDA AL HOME */}
                     <Link href="/" className="font-fortnite text-3xl text-white hover:opacity-80 transition">
                         AQUAFORNAIS
                     </Link>
@@ -115,14 +119,12 @@ const Header = () => {
 
                     <div className="drawer-content">
 
-                        <label htmlFor="my-drawer-4" className="drawer-button border-none btn btn-ghost hover:bg-transparent hover:border-none ">
+                        <label htmlFor="my-drawer-4" className="drawer-button border-none btn btn-ghost hover:bg-transparent">
 
                             {
                                 items.length === 0
                                     ?
-                                    <div className="flex flex-row">
-                                        <Icon icon="solar:cart-large-2-outline" fontSize={28} style={{ color: 'white' }} />
-                                    </div>
+                                    <Icon icon="solar:cart-large-2-outline" fontSize={28} style={{ color: 'white' }} />
                                     :
                                     <div className="flex flex-row items-center">
                                         <Icon icon="solar:cart-large-2-outline" fontSize={28} style={{ color: 'white' }} />
@@ -136,7 +138,7 @@ const Header = () => {
 
                     <div className="top-0 right-0 h-screen drawer-side z-[1000]">
 
-                        <label htmlFor="my-drawer-4" aria-label="close sidebar" className="drawer-overlay"></label>
+                        <label htmlFor="my-drawer-4" className="drawer-overlay"></label>
 
                         <div className="menu bg-base-200 text-base-content min-h-full w-70 md:w-80 flex flex-col">
 
@@ -163,10 +165,6 @@ const Header = () => {
                                         <h1 className="text-lg text-center">
                                             Carrito de compras <span className="text-error font-bold">vacío!</span>
                                         </h1>
-
-                                        <p className="text-center">
-                                            Agrega algunos productos antes de proceder con la compra
-                                        </p>
 
                                     </div>
 

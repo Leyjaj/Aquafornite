@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+
 import { UserProvider } from "@/hooks/useUser";
 import { CurrencyProvider } from "@/hooks/useCurrency";
 import Header from "@/components/Header";
@@ -12,7 +13,7 @@ const SpaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: "Aquafornais",
-  description: "uwu",
+  description: "Aquafornais Fortnite Store",
 };
 
 export default function RootLayout({
@@ -21,16 +22,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className={`${SpaceGrotesk.variable} antialiased bg-[#0A1F44]`}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${SpaceGrotesk.variable} antialiased bg-[#0A1F44] text-white`}
+      >
         <UserProvider>
           <CurrencyProvider>
 
+            {/* NAVBAR */}
             <Header />
 
-            <div className="pt-24">
+            {/* CONTENT */}
+            <main className="pt-24">
               {children}
-            </div>
+            </main>
 
           </CurrencyProvider>
         </UserProvider>
