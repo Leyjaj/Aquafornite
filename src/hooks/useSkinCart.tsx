@@ -5,13 +5,14 @@ import Skin, { SkinWithDiscount } from "@/interfaces/skin.interface";
 
 interface SkinItem extends SkinWithDiscount {
   quantity: number;
-  customPrice?: number; // 🔥 precio real
-  currency?: string;    // 🔥 moneda
+  price: number;       // 🔥 ahora sí tipado
+  customPrice: number; // 🔥 obligatorio
+  currency?: string;
 }
 
 interface SkinStore {
   items: SkinItem[],
-  addItem: (data: SkinItem) => void,
+  addItem: (data: any) => void,
   removeItem: (id: string) => void,
   removeAll: () => void,
 }
@@ -19,7 +20,7 @@ interface SkinStore {
 export const useSkinCart = create<SkinStore>((set, get) => ({
   items: [],
 
-  addItem: (data: SkinItem) => {
+  addItem: (data: any) => {
 
     const currentItems = get().items;
 
@@ -34,11 +35,12 @@ export const useSkinCart = create<SkinStore>((set, get) => ({
       });
     }
 
-    // 🔥 FORZAMOS EL PRECIO CORRECTO
+    const safePrice = Number(data.customPrice ?? data.price ?? 0);
+
     const itemFixed: SkinItem = {
       ...data,
-      price: data.customPrice ?? data.price, // ← clave
-      customPrice: data.customPrice ?? data.price,
+      price: safePrice,
+      customPrice: safePrice,
       quantity: 1,
     };
 
