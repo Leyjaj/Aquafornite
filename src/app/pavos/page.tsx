@@ -10,10 +10,10 @@ type Pack = {
 
 export default function PavosPage() {
   const packs: Pack[] = [
-    { amount: 1000, price: 5.5, image: "/pavos/1000-pavos.jpg", theme: "green" },
-    { amount: 2800, price: 13, image: "/pavos/2800-pavos.jpg", theme: "blue", extra: "9% EXTRA*" },
-    { amount: 5000, price: 24, image: "/pavos/5000-pavos.jpg", theme: "purple", extra: "22% EXTRA*" },
-    { amount: 13500, price: 55, image: "/pavos/13500-pavos.jpg", theme: "orange", extra: "35% EXTRA*" },
+    { amount: 800, price: 5.5, image: "/pavos/1000-pavos.jpg", theme: "green" },
+    { amount: 2400, price: 13, image: "/pavos/2800-pavos.jpg", theme: "blue", extra: "20 % adicional*" },
+    { amount: 4500, price: 22, image: "/pavos/5000-pavos.jpg", theme: "purple", extra: "40 % adicional*" },
+    { amount: 12500, price: 53, image: "/pavos/13500-pavos.jpg", theme: "orange", extra: "55 % adicional*" },
   ];
 
   const themeClass: Record<Pack["theme"], string> = {
