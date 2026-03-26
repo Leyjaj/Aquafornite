@@ -17,6 +17,58 @@ interface Props {
   groupedSkins: Record<string, { layout: Layout; skins: Skin[] }>;
 }
 
+const toggleWishlist = async (item: any, isSaved: boolean, setSaved: any) => {
+  if (isSaved) {
+    await fetch("/api/wishlist", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skinId: item.id }),
+    });
+    setSaved(false);
+  } else {
+    await fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        skinId: item.id,
+        name: item.name,
+        image: item.images?.icon || item.image,
+        price: item.price,
+      }),
+    });
+    setSaved(true);
+  }
+};
+
+function WishlistButton({ item }: { item: any }) {
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const res = await fetch("/api/wishlist");
+      const data = await res.json();
+      if (data.some((w: any) => w.skinId === item.id)) {
+        setSaved(true);
+      }
+    };
+    load();
+  }, [item.id]);
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleWishlist(item, saved, setSaved);
+      }}
+      className={`absolute top-2 right-2 z-20 text-xl ${
+        saved ? "text-red-500" : "text-white"
+      }`}
+    >
+      ♥
+    </button>
+  );
+}
+
 export default function SkinGridInfinite({ groupedSkins }: Props) {
   if (!groupedSkins || Object.keys(groupedSkins).length === 0) {
     return null;
@@ -156,6 +208,8 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                     } relative cursor-pointer shadow-[0px_0px_80px_-44px_rgba(0,_0,_0,_0.7)]`}
                     style={getBackgroundStyle(skin)}
                   >
+                    <WishlistButton item={{ ...skin, id: skin.id, name: displayName, image: imageSrc, price: finalPrice }} />
+
                     <div className="relative w-full flex-1 flex items-center justify-center p-4 overflow-hidden">
                       <Image
                         fill
@@ -184,7 +238,10 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
 
                       {!isMobile && (
                         <button
-                          onClick={() => addItem(skinWithPrice as any)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addItem(skinWithPrice as any);
+                          }}
                           className="btn mt-2 w-full btn-primary text-white font-medium"
                         >
                           Agregar al carrito

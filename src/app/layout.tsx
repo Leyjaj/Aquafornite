@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
+import { ClerkProvider } from "@clerk/nextjs";
+
 import { UserProvider } from "@/hooks/useUser";
 import { CurrencyProvider } from "@/hooks/useCurrency";
 import Header from "@/components/Header";
@@ -22,24 +24,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${SpaceGrotesk.variable} antialiased bg-[#0A1F44] text-white`}
-      >
-        <UserProvider>
-          <CurrencyProvider>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${SpaceGrotesk.variable} antialiased bg-[#0A1F44] text-white`}
+        >
+          <UserProvider>
+            <CurrencyProvider>
 
-            {/* NAVBAR */}
-            <Header />
+              <Header />
 
-            {/* CONTENT */}
-            <main className="pt-24">
-              {children}
-            </main>
+              <main className="pt-24">
+                {children}
+              </main>
 
-          </CurrencyProvider>
-        </UserProvider>
-      </body>
-    </html>
+            </CurrencyProvider>
+          </UserProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

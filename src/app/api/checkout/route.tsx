@@ -38,12 +38,14 @@ export async function POST(req: NextRequest) {
     let paymentMethods: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] =
       ["card"];
 
-    // ✅ OXXO SOLO SI:
-    // - moneda MXN
-    // - total >= 10 MXN
     if (stripeCurrency === "mxn" && totalAmount >= 10) {
       paymentMethods.push("oxxo");
     }
+
+    // 🔥 CONTROL DE CUPONES POR PRODUCTO
+    // Si TODOS los productos permiten cupones → true
+    // Si alguno NO → false
+    const allowCoupons = items.every((item) => item.allowCoupons === true);
 
     const LineItems = items.map((item) => {
       const price = item.customPrice ?? item.price ?? 0;
@@ -66,7 +68,8 @@ export async function POST(req: NextRequest) {
       line_items: LineItems,
       mode: "payment",
 
-      allow_promotion_codes: true,
+      // 👇 AQUÍ YA ES DINÁMICO
+      allow_promotion_codes: allowCoupons,
 
       custom_fields: [
         {

@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id            String   @id @default(cuid())
+  clerkId       String?  @unique
   name          String?
   email         String   @unique
   emailVerified Boolean  @default(false)
@@ -23,6 +24,10 @@ model User {
   accounts         Account[]
   aquacoinsHistory AquacoinsHistory[]
   Purchase         Purchase[]
+
+  wishlist Wishlist[]
+  friends  Friend[] @relation("UserFriends")
+  friendOf Friend[] @relation("UserFriendsList")
 }
 
 model Session {
@@ -74,6 +79,11 @@ model Purchase {
   cashback  Int
   createdAt DateTime @default(now())
 
+  status String @default("pending")
+  paymentMethod String?
+  isManual Boolean @default(false)
+  confirmedAt DateTime?
+
   user User @relation(fields: [userId], references: [id])
 }
 
@@ -84,4 +94,32 @@ model AquacoinsHistory {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [user_id], references: [id])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  skinId    String
+  name      String
+  image     String?
+  price     Int?
+  visibility String  @default("public")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, skinId])
+}
+
+model Friend {
+  id        String @id @default(cuid())
+  userId    String
+  friendId  String
+  status    String @default("pending")
+  createdAt DateTime @default(now())
+
+  user   User @relation("UserFriends", fields: [userId], references: [id])
+  friend User @relation("UserFriendsList", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
 }

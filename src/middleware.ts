@@ -1,16 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-export async function middleware(request: NextRequest) {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
-    if(!session) {
-        return NextResponse.redirect(new URL("/auth", request.url));
-    }
-    return NextResponse.next();
-}
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+export default clerkMiddleware((auth, req) => {
+  return NextResponse.next();
+});
+
 export const config = {
-  runtime: "nodejs",
-  matcher: [ "/aquacoins"], // Apply middleware to specific routes
+  matcher: ["/((?!_next|.*\\..*).*)"],
 };
