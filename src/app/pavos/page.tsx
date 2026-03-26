@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 type Pack = {
   amount: number;
   price: number;
@@ -16,6 +18,8 @@ export default function PavosPage() {
     { amount: 12500, price: 53, image: "/pavos/13500-pavos.jpg", theme: "orange", extra: "55 % adicional*" },
   ];
 
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
+
   const themeClass: Record<Pack["theme"], string> = {
     green: "from-green-500 to-green-700",
     blue: "from-sky-500 to-blue-700",
@@ -24,6 +28,8 @@ export default function PavosPage() {
   };
 
   const handleCheckout = async (pack: Pack) => {
+    const qty = quantities[pack.amount] || 1;
+
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -33,7 +39,8 @@ export default function PavosPage() {
             id: `pavos_${pack.amount}`,
             name: `${pack.amount} Pavos`,
             price: pack.price,
-            quantity: 1,
+            quantity: qty,
+            allowCoupons: false,
           },
         ],
       }),
@@ -71,7 +78,7 @@ export default function PavosPage() {
               />
             </div>
 
-            <div className="text-center mb-6">
+            <div className="text-center mb-4">
               <div className="text-4xl font-extrabold">
                 {pack.amount.toLocaleString()}
               </div>
@@ -80,11 +87,28 @@ export default function PavosPage() {
               </div>
             </div>
 
+            <select
+              value={quantities[pack.amount] || 1}
+              onChange={(e) =>
+                setQuantities({
+                  ...quantities,
+                  [pack.amount]: Number(e.target.value),
+                })
+              }
+              className="w-full mb-4 text-black rounded-xl px-3 py-2 text-center font-bold"
+            >
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+
             <button
               onClick={() => handleCheckout(pack)}
               className="w-full rounded-2xl bg-yellow-300 text-black font-extrabold text-lg py-3 hover:brightness-95 transition mb-4"
             >
-              ${pack.price} USD
+              ${(pack.price * (quantities[pack.amount] || 1)).toFixed(2)} USD
             </button>
 
             <button
