@@ -149,7 +149,8 @@ export default function AquaCoinsShop({ skins }: { skins: SkinWithDiscount[] }) 
     [cart]
   );
 
-  const canCheckout = cart.length > 0 && balance >= cartTotal && !isCheckingOut;
+  const hasEnoughBalance = balance >= cartTotal;
+  const canCheckout = cart.length > 0 && hasEnoughBalance && !isCheckingOut;
 
   const addToCart = (item: ShopItem) => {
     setCart((prev) => {
@@ -329,11 +330,34 @@ export default function AquaCoinsShop({ skins }: { skins: SkinWithDiscount[] }) 
                 type="button"
                 onClick={handleCheckout}
                 disabled={!canCheckout}
-                className="btn btn-success btn-sm"
+                className="btn btn-success btn-sm disabled:opacity-70 disabled:bg-slate-600 disabled:text-white"
               >
-                {isCheckingOut ? "Procesando..." : "Comprar carrito AQ"}
+                {isCheckingOut
+                  ? "Procesando..."
+                  : cart.length === 0
+                  ? "Agrega items al carrito"
+                  : !hasEnoughBalance
+                  ? "Saldo insuficiente"
+                  : "Comprar carrito AQ"}
               </button>
             </div>
+
+            {cart.length > 0 && !hasEnoughBalance && (
+              <div className="mt-2 flex flex-col gap-2 text-xs text-amber-300 md:flex-row md:items-center md:justify-between">
+                <p>
+                  Te faltan <span className="font-semibold">{(cartTotal - balance).toLocaleString()} AQ</span> para completar la compra.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = "/aquacoins";
+                  }}
+                  className="btn btn-xs btn-warning"
+                >
+                  Recargar AquaCoins
+                </button>
+              </div>
+            )}
 
             {cart.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
