@@ -32,7 +32,7 @@ const Header = () => {
   const { currency } = useCurrency();
   const { isSignedIn } = useSession();
   const { user } = useClerkUser();
-  const { signOut } = useClerk();
+  const { signOut, openSignIn } = useClerk();
 
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat(undefined, {
@@ -423,10 +423,17 @@ const Header = () => {
             </ul>
           </div>
         ) : (
-          <Link href="/login" className="btn btn-primary btn-sm md:btn-md m-0 px-2 md:px-4 w-auto whitespace-nowrap">
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                openSignIn?.();
+              }
+            }}
+            className="btn btn-primary btn-sm md:btn-md m-0 px-2 md:px-4 w-auto whitespace-nowrap"
+          >
             <span className="text-xs md:hidden">Entrar</span>
             <span className="hidden md:inline">Iniciar Sesión</span>
-          </Link>
+          </button>
         )}
       </div>
     </div>
