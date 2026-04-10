@@ -63,12 +63,7 @@ export async function POST(req: Request) {
       return acc + vbucks * quantity;
     }, 0);
 
-    const cashbackEligibleVbucks = cartItems.reduce((acc, item) => {
-      if (item?.eligibleForCashback !== true) return acc;
-      const vbucks = Number(item?.vbucks ?? 0);
-      const quantity = Number(item?.quantity ?? 1);
-      return acc + vbucks * quantity;
-    }, 0);
+    const cashbackEligibleVbucks = totalVbucks;
 
     if (!supportedCurrencies.has(normalizedCurrency)) {
       return NextResponse.json(

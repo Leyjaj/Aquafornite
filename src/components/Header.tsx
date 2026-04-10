@@ -25,6 +25,16 @@ const countryOptions = [
 
 const paypalCurrencies = new Set(["USD", "MXN", "BRL"]);
 const isPayPalEnabled = process.env.NEXT_PUBLIC_ENABLE_PAYPAL === "true";
+const pricePer100: Record<string, number> = {
+  USD: 0.36,
+  MXN: 6.5,
+  PEN: 1.3,
+  EUR: 0.32,
+  COP: 1300,
+  CLP: 330,
+  BOB: 2.5,
+  BRL: 1.9,
+};
 
 const Header = () => {
   const { items, removeItem } = useSkinCart();
@@ -41,16 +51,26 @@ const Header = () => {
     }).format(value);
   };
 
+  const getCurrentItemPrice = (item: any) => {
+    const vbucks = Number(item?.finalPrice ?? item?.vbucks ?? 0);
+
+    if (vbucks > 0) {
+      const per100 = pricePer100[currency] ?? pricePer100.USD;
+      return Number(((vbucks * per100) / 100).toFixed(2));
+    }
+
+    return Number(item?.customPrice ?? item?.price ?? 0);
+  };
+
   const total = items.reduce(
-    (acc, item: any) => acc + Number(item.customPrice ?? item.price ?? 0),
+    (acc, item: any) => acc + getCurrentItemPrice(item),
     0
   );
 
   const buildCheckoutItems = () =>
     items.map((item: any) => {
-      const itemType = String(item?.brItems?.[0]?.type?.value || "").toLowerCase();
       const vbucks = Number(item?.finalPrice ?? item?.vbucks ?? 0);
-      const eligibleForCashback = itemType === "outfit" && !item?.bundle;
+      const eligibleForCashback = vbucks > 0;
       const itemId = String(item?.brItems?.[0]?.id ?? item?.mainId ?? item?.newDisplayAsset?.cosmeticId ?? "");
       const offerId = String(item?.offerId ?? item?.newDisplayAssetPath ?? "");
 
@@ -58,8 +78,8 @@ const Header = () => {
         itemId,
         offerId,
         name: item.bundle?.name || item.brItems?.[0]?.name || item.tracks?.[0]?.title || "Producto",
-        price: Number(item.customPrice ?? item.price ?? 0),
-        customPrice: Number(item.customPrice ?? item.price ?? 0),
+        price: getCurrentItemPrice(item),
+        customPrice: getCurrentItemPrice(item),
         images: item?.newDisplayAsset?.renderImages?.[0]?.image || item?.tracks?.[0]?.albumArt || "",
         quantity: item.quantity ?? 1,
         vbucks,
@@ -280,7 +300,7 @@ const Header = () => {
                             </h3>
 
                             <p className="ml-4 whitespace-nowrap">
-                              {currency} {formatPrice(Number(item.customPrice ?? item.price ?? 0))}
+                              {currency} {formatPrice(getCurrentItemPrice(item))}
                             </p>
                           </div>
 

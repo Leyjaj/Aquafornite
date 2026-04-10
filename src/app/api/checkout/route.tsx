@@ -98,13 +98,7 @@ export async function POST(req: NextRequest) {
       return acc + vbucks * quantity;
     }, 0);
 
-    const cashbackEligibleVbucks = items.reduce((acc, item) => {
-      const eligible = item.eligibleForCashback === true;
-      if (!eligible) return acc;
-      const vbucks = Number(item.vbucks ?? 0);
-      const quantity = Number(item.quantity ?? 1);
-      return acc + vbucks * quantity;
-    }, 0);
+    const cashbackEligibleVbucks = vbucksTotal;
 
     const itemData = items
       .map((item) => {
