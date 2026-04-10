@@ -9,7 +9,7 @@ import SelectedItems from "./SelectedItems";
 import Skin from "@/interfaces/skin.interface";
 import { useCurrency } from "@/hooks/useCurrency";
 
-import { SignInButton, useClerk, useSession, useUser as useClerkUser } from "@clerk/nextjs";
+import { useClerk, useSession, useUser as useClerkUser } from "@clerk/nextjs";
 import { showToast } from "nextjs-toast-notify";
 
 const countryOptions = [
@@ -423,12 +423,10 @@ const Header = () => {
             </ul>
           </div>
         ) : (
-          <SignInButton mode="modal">
-            <button className="btn btn-primary btn-sm md:btn-md m-0 px-2 md:px-4 w-auto whitespace-nowrap">
-              <span className="text-xs md:hidden">Entrar</span>
-              <span className="hidden md:inline">Iniciar Sesión</span>
-            </button>
-          </SignInButton>
+          <Link href="/login" className="btn btn-primary btn-sm md:btn-md m-0 px-2 md:px-4 w-auto whitespace-nowrap">
+            <span className="text-xs md:hidden">Entrar</span>
+            <span className="hidden md:inline">Iniciar Sesión</span>
+          </Link>
         )}
       </div>
     </div>
