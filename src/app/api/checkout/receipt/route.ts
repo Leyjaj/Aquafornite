@@ -64,6 +64,60 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Recibo no disponible" }, { status: 404 });
     }
 
+    if ((session.metadata?.type ?? "") !== "aquacoins") {
+      const legacyItems = JSON.parse(session.metadata?.items || "[]");
+      const metadataVbucks = Number(session.metadata?.vbucksTotal ?? 0);
+      const metadataCashbackEligible = Number(session.metadata?.cashbackEligibleVbucks ?? 0);
+      const vbucks = metadataVbucks || legacyItems?.[0]?.vbucks || 0;
+      const cashback = Math.floor(metadataCashbackEligible * 0.1);
+      const total = Number((session.amount_total ?? 0) / 100);
+      const existing = await prisma.purchase.findFirst({
+        where: {
+          stripeSessionId: session.id,
+        },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        await prisma.$transaction(async (tx) => {
+          await tx.purchase.create({
+            data: {
+              stripeSessionId: session.id,
+              userId: appUser.id,
+              amountUSD: total,
+              vbucks,
+              cashback,
+              epicAccountId: session.metadata?.epicAccountId || null,
+              epicNickname: session.metadata?.epicNickname || null,
+              itemsSummary: session.metadata?.itemData || session.metadata?.items || null,
+              paymentMethod: "stripe",
+              status: "confirmed",
+              confirmedAt: new Date(),
+            },
+          });
+
+          if (cashback > 0) {
+            await tx.user.update({
+              where: { id: appUser.id },
+              data: {
+                aquacoins: {
+                  increment: cashback,
+                },
+              },
+            });
+
+            await tx.aquacoinsHistory.create({
+              data: {
+                user_id: appUser.id,
+                amount: cashback,
+                source: "cashback",
+              },
+            });
+          }
+        });
+      }
+    }
+
     const lineItems = (session as any)?.line_items?.data ?? [];
     const itemData = parseItemData(session.metadata?.itemData);
 
@@ -94,7 +148,6 @@ export async function GET(req: NextRequest) {
       total: Number((session.amount_total ?? 0) / 100),
       currency: String(session.metadata?.currency || session.currency || "USD").toUpperCase(),
       nickname: session.metadata?.epicNickname || "",
-      epicId: session.metadata?.epicAccountId || "",
       items,
     });
   } catch (error: any) {

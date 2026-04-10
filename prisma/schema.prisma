@@ -73,6 +73,7 @@ model Verification {
 
 model Purchase {
   id        String   @id @default(cuid())
+  stripeSessionId String?
   userId    String
   amountUSD Float
   vbucks    Int

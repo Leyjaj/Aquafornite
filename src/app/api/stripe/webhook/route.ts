@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
-    if (event.type === "checkout.session.completed") {
+    if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const userId = session.metadata?.userId;
@@ -69,41 +69,54 @@ export async function POST(req: NextRequest) {
         const cashbackEligibleVbucks = metadataCashbackEligible || 0;
         const cashback = Math.floor(cashbackEligibleVbucks * 0.1);
 
-        // 🔥 Guardar compra en tabla Purchase (según tu schema)
-        await prisma.purchase.create({
-          data: {
-            userId: userId,
-            amountUSD: total,
-            vbucks: vbucks,
-            cashback: cashback,
-            paymentMethod: "stripe",
-            status: "confirmed",
-            confirmedAt: new Date(),
+        const existing = await prisma.purchase.findFirst({
+          where: {
+            stripeSessionId: session.id,
           },
+          select: { id: true },
         });
 
-        console.log("✅ Compra guardada");
-
-        // 🔥 Aplicar cashback
-        if (cashback > 0) {
-          await prisma.user.update({
-            where: { id: userId },
-            data: {
-              aquacoins: {
-                increment: cashback,
+        if (existing) {
+          console.log("ℹ️ Compra ya registrada, se omite duplicado", session.id);
+        } else {
+          await prisma.$transaction(async (tx) => {
+            await tx.purchase.create({
+              data: {
+                stripeSessionId: session.id,
+                userId,
+                amountUSD: total,
+                vbucks,
+                cashback,
+                epicAccountId: session.metadata?.epicAccountId || null,
+                epicNickname: session.metadata?.epicNickname || null,
+                itemsSummary: session.metadata?.itemData || session.metadata?.items || null,
+                paymentMethod: "stripe",
+                status: "confirmed",
+                confirmedAt: new Date(),
               },
-            },
+            });
+
+            if (cashback > 0) {
+              await tx.user.update({
+                where: { id: userId },
+                data: {
+                  aquacoins: {
+                    increment: cashback,
+                  },
+                },
+              });
+
+              await tx.aquacoinsHistory.create({
+                data: {
+                  user_id: userId,
+                  amount: cashback,
+                  source: "cashback",
+                },
+              });
+            }
           });
 
-          await prisma.aquacoinsHistory.create({
-            data: {
-              user_id: userId,
-              amount: cashback,
-              source: "cashback",
-            },
-          });
-
-          console.log("🔥 Cashback aplicado:", cashback);
+          console.log("✅ Compra guardada", session.id);
         }
       }
     }
