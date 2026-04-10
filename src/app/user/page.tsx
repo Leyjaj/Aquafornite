@@ -11,10 +11,30 @@ type HistoryItem = {
   id: string;
   type: 'purchase' | 'aquacoins' | string;
   total: number;
+  currency?: string;
   vbucks?: number;
   cashback?: number;
   paymentMethod?: string | null;
   createdAt: string;
+};
+
+const formatMoney = (amount: number, currency?: string) => {
+  const code = String(currency || 'USD').toUpperCase();
+
+  if (code === 'AQ') {
+    return `${Math.floor(amount || 0)} AQ`;
+  }
+
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount || 0);
+  } catch {
+    return `${code} ${(amount || 0).toFixed(2)}`;
+  }
 };
 
 export default function UserPage() {
@@ -43,10 +63,25 @@ export default function UserPage() {
     const purchases = history.filter((h) => h.type === 'purchase');
     const coins = history.filter((h) => h.type === 'aquacoins');
 
+    const spentByCurrency = purchases.reduce<Record<string, number>>((acc, item) => {
+      const code = String(item.currency || 'USD').toUpperCase();
+      acc[code] = (acc[code] || 0) + (item.total || 0);
+      return acc;
+    }, {});
+
+    const currencyEntries = Object.entries(spentByCurrency);
+    const spentLabel =
+      currencyEntries.length === 0
+        ? '$0.00'
+        : currencyEntries.length === 1
+        ? formatMoney(currencyEntries[0][1], currencyEntries[0][0])
+        : `${currencyEntries.length} monedas`;
+
     return {
       purchases: purchases.length,
       coinsTopups: coins.length,
-      spentUsd: purchases.reduce((acc, item) => acc + (item.total || 0), 0),
+      spentLabel,
+      spentByCurrency,
       totalVbucks: purchases.reduce((acc, item) => acc + (item.vbucks || 0), 0),
       totalCashback: purchases.reduce((acc, item) => acc + (item.cashback || 0), 0),
     };
@@ -98,7 +133,14 @@ export default function UserPage() {
             </div>
             <div className="rounded-xl border border-white/15 bg-white/5 px-3 py-2">
               <p className="text-[11px] uppercase text-white/65">Gastado</p>
-              <p className="text-lg font-bold">${stats.spentUsd.toFixed(2)} USD</p>
+              <p className="text-lg font-bold">{stats.spentLabel}</p>
+              {Object.keys(stats.spentByCurrency).length > 1 && (
+                <p className="mt-1 text-[11px] text-white/65">
+                  {Object.entries(stats.spentByCurrency)
+                    .map(([code, amount]) => formatMoney(amount, code))
+                    .join(' · ')}
+                </p>
+              )}
             </div>
             <div className="rounded-xl border border-white/15 bg-white/5 px-3 py-2">
               <p className="text-[11px] uppercase text-white/65">V-Bucks</p>
@@ -140,6 +182,9 @@ export default function UserPage() {
                     <span className={`badge ${item.paymentMethod === 'aquacoins' ? 'badge-warning' : 'badge-info'}`}>
                       {item.paymentMethod === 'aquacoins' ? 'Compra con AQ' : 'Compra'}
                     </span>
+                    <span className="badge badge-outline border-white/30 text-white/80">
+                      {String(item.currency || 'USD').toUpperCase()}
+                    </span>
                     <span className="text-white/70 text-sm">#{item.id.slice(0, 8)}</span>
                   </div>
 
@@ -151,7 +196,7 @@ export default function UserPage() {
                 <div className="mt-3 grid grid-cols-1 gap-2 text-sm md:grid-cols-4">
                   <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2">
                     <p className="text-white/60">Total</p>
-                    <p className="font-bold">${(item.total || 0).toFixed(2)}</p>
+                    <p className="font-bold">{formatMoney(item.total || 0, item.currency)}</p>
                   </div>
 
                   <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2">

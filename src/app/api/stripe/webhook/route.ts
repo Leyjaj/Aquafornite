@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
       // ======================================
       else {
         const total = session.amount_total! / 100;
+        const currency = String(session.metadata?.currency || session.currency || "USD").toUpperCase();
 
         const legacyItems = JSON.parse(session.metadata?.items || "[]");
         const metadataVbucks = Number(session.metadata?.vbucksTotal ?? 0);
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
                 stripeSessionId: session.id,
                 userId,
                 amountUSD: total,
+                currency,
                 vbucks,
                 cashback,
                 epicAccountId: session.metadata?.epicAccountId || null,

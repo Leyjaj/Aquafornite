@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
       const vbucks = metadataVbucks || legacyItems?.[0]?.vbucks || 0;
       const cashback = Math.floor(metadataCashbackEligible * 0.1);
       const total = Number((session.amount_total ?? 0) / 100);
+      const currency = String(session.metadata?.currency || session.currency || "USD").toUpperCase();
       const existing = await prisma.purchase.findFirst({
         where: {
           stripeSessionId: session.id,
@@ -85,6 +86,7 @@ export async function GET(req: NextRequest) {
               stripeSessionId: session.id,
               userId: appUser.id,
               amountUSD: total,
+              currency,
               vbucks,
               cashback,
               epicAccountId: session.metadata?.epicAccountId || null,

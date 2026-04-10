@@ -90,6 +90,7 @@ export async function POST(req: NextRequest) {
         data: {
           userId: user!.id,
           amountUSD: 0,
+          currency: "AQ",
           vbucks: cost,
           cashback: 0,
           epicAccountId,
