@@ -69,13 +69,26 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const updatedUser = await tx.user.update({
-        where: { id: user!.id },
+      const debit = await tx.user.updateMany({
+        where: {
+          id: user!.id,
+          aquacoins: {
+            gte: cost,
+          },
+        },
         data: {
           aquacoins: {
             decrement: cost,
           },
         },
+      });
+
+      if (debit.count === 0) {
+        throw new Error("No tienes suficientes AquaCoins");
+      }
+
+      const updatedUser = await tx.user.findUniqueOrThrow({
+        where: { id: user!.id },
       });
 
       await tx.aquacoinsHistory.create({
@@ -89,7 +102,7 @@ export async function POST(req: NextRequest) {
       await tx.purchase.create({
         data: {
           userId: user!.id,
-          amountUSD: 0,
+          amountUSD: cost,
           currency: "AQ",
           vbucks: cost,
           cashback: 0,
@@ -112,6 +125,10 @@ export async function POST(req: NextRequest) {
       balance: result.aquacoins,
     });
   } catch (error: any) {
+    if (error?.message === "No tienes suficientes AquaCoins") {
+      return NextResponse.json({ error: "No tienes suficientes AquaCoins" }, { status: 400 });
+    }
+
     console.error("AQUACOINS SHOP PURCHASE ERROR:", error);
     return NextResponse.json(
       { error: error?.message || "Error interno al procesar la compra" },
