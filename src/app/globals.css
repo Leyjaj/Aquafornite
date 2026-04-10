@@ -12,7 +12,7 @@
   --font-fortnite:'fortnite',sans-serif;
 }
 @plugin "daisyui"{
-  themes: light --default, dark --prefersdark,corporate;
+  themes: corporate --default;
   exclude: checkbox, footer, typography, glass, rootcolor, rootscrollgutter;
 };
 

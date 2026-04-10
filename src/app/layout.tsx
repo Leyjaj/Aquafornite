@@ -27,6 +27,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body
+          suppressHydrationWarning
           className={`${SpaceGrotesk.variable} antialiased bg-[#0A1F44] text-white`}
         >
           <UserProvider>

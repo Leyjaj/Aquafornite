@@ -8,11 +8,18 @@ type Pack = {
   image: string;
   extra?: string;
   theme: "green" | "blue" | "purple" | "orange";
+  imageClass?: string;
 };
 
 export default function PavosPage() {
   const packs: Pack[] = [
-    { amount: 800, price: 5.5, image: "/pavos/1000-pavos.jpg", theme: "green" },
+    {
+      amount: 800,
+      price: 5.5,
+      image: "/pavos/1000-pavos.jpg",
+      theme: "green",
+      imageClass: "object-contain h-[88%] w-[88%]",
+    },
     { amount: 2400, price: 13, image: "/pavos/2800-pavos.jpg", theme: "blue", extra: "20 % adicional*" },
     { amount: 4500, price: 22, image: "/pavos/5000-pavos.jpg", theme: "purple", extra: "40 % adicional*" },
     { amount: 12500, price: 53, image: "/pavos/13500-pavos.jpg", theme: "orange", extra: "55 % adicional*" },
@@ -68,13 +75,11 @@ export default function PavosPage() {
               </div>
             )}
 
-            <div className="rounded-2xl overflow-hidden h-[300px] sm:h-[320px] mb-6 bg-black/15">
-              <div
-                className="w-full h-full bg-center bg-cover"
-                style={{
-                  backgroundImage: `url(${pack.image})`,
-                  transform: "scale(1.15)",
-                }}
+            <div className="rounded-2xl overflow-hidden h-[300px] sm:h-[320px] mb-6 bg-black/15 relative">
+              <img
+                src={pack.image}
+                alt={`${pack.amount} Pavos`}
+                className={`absolute inset-0 m-auto h-full w-full object-cover object-center scale-[1.08] ${pack.imageClass ?? ""}`}
               />
             </div>
 

@@ -1,5 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import Stripe from "stripe";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2025-08-27.basil",
@@ -19,13 +21,40 @@ const currencyMap: Record<string, string> = {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  let user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        clerkId: clerkUserId,
+        email: `${clerkUserId}@temp.com`,
+        aquacoins: 100,
+      },
+    });
+  }
+
   const items = body.items as any[];
   const currency = body.currency || "USD";
+  const epicAccountId = String(body.epicAccountId ?? "");
+  const epicNickname = String(body.epicNickname ?? "");
   const stripeCurrency = currencyMap[currency] || "usd";
 
   try {
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No hay productos." }, { status: 400 });
+    }
+
+    if (!epicAccountId) {
+      return NextResponse.json(
+        { error: "Falta ID de Epic. Guárdalo en la tienda antes de pagar." },
+        { status: 400 }
+      );
     }
 
     // 🔥 TOTAL para validar OXXO
@@ -47,7 +76,7 @@ export async function POST(req: NextRequest) {
     // Si alguno NO → false
     const allowCoupons = items.every((item) => item.allowCoupons === true);
 
-    const LineItems = items.map((item) => {
+    const lineItems = items.map((item) => {
       const price = item.customPrice ?? item.price ?? 0;
 
       return {
@@ -63,32 +92,51 @@ export async function POST(req: NextRequest) {
       };
     });
 
+    const vbucksTotal = items.reduce((acc, item) => {
+      const vbucks = Number(item.vbucks ?? 0);
+      const quantity = Number(item.quantity ?? 1);
+      return acc + vbucks * quantity;
+    }, 0);
+
+    const cashbackEligibleVbucks = items.reduce((acc, item) => {
+      const eligible = item.eligibleForCashback === true;
+      if (!eligible) return acc;
+      const vbucks = Number(item.vbucks ?? 0);
+      const quantity = Number(item.quantity ?? 1);
+      return acc + vbucks * quantity;
+    }, 0);
+
+    const itemData = items
+      .map((item) => {
+        const id = String(item.itemId ?? "").replace(/[;,|]/g, "");
+        const offerId = String(item.offerId ?? "").replace(/[;,|]/g, "");
+        const vbucks = Number(item.vbucks ?? 0);
+        const priceCents = Math.round(Number(item.customPrice ?? item.price ?? 0) * 100);
+        const quantity = Number(item.quantity ?? 1);
+        return `${id}|${offerId}|${vbucks}|${priceCents}|${quantity}`;
+      })
+      .join(";");
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: paymentMethods,
-      line_items: LineItems,
+      line_items: lineItems,
       mode: "payment",
 
       // 👇 AQUÍ YA ES DINÁMICO
       allow_promotion_codes: allowCoupons,
 
-      custom_fields: [
-        {
-          key: "id_fortnite",
-          label: {
-            type: "custom",
-            custom: "ID Fortnite",
-          },
-          type: "text",
-        },
-      ],
-
-      success_url: `${process.env.BETTER_AUTH_URL}/success`,
+      success_url: `${process.env.BETTER_AUTH_URL}/success?provider=stripe&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BETTER_AUTH_URL}/`,
 
       metadata: {
-        userId: body.userId ?? "",
+        userId: user.id,
         currency,
-        items: JSON.stringify(items),
+        itemCount: String(items.length),
+        vbucksTotal: String(vbucksTotal),
+        cashbackEligibleVbucks: String(cashbackEligibleVbucks),
+        itemData,
+        epicAccountId,
+        epicNickname,
       },
     });
 

@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
 
     // 🟦 Historial AquaCoins
     const coins = await prisma.aquacoinsHistory.findMany({
-      where: { user_id: userId },
+      where: {
+        user_id: userId,
+        source: "recharge",
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -31,6 +34,8 @@ export async function GET(req: NextRequest) {
         type: "purchase",
         total: p.amountUSD,
         vbucks: p.vbucks,
+        cashback: p.cashback,
+        paymentMethod: p.paymentMethod,
         createdAt: p.createdAt,
       })),
 
@@ -39,6 +44,7 @@ export async function GET(req: NextRequest) {
         type: "aquacoins",
         total: c.amount,
         vbucks: 0,
+        cashback: 0,
         createdAt: c.createdAt,
       })),
     ].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));

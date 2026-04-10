@@ -1,16 +1,16 @@
 'use client'
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Icon } from "@iconify/react";
 import { useSkinCart } from "@/hooks/useSkinCart";
-import { useRouter } from "next/navigation";
+import { useUser as useAppUser } from "@/hooks/useUser";
 import SelectedItems from "./SelectedItems";
 import Skin from "@/interfaces/skin.interface";
 import { useCurrency } from "@/hooks/useCurrency";
 
-import { SignInButton, UserButton, useSession } from "@clerk/nextjs";  // Importación de Clerk
+import { SignInButton, useClerk, useSession, useUser as useClerkUser } from "@clerk/nextjs";
+import { showToast } from "nextjs-toast-notify";
 
 const countryOptions = [
   { id: "usd", label: "USD", icon: <Icon icon="twemoji:flag-united-states" width="22" /> },
@@ -23,14 +23,16 @@ const countryOptions = [
   { id: "brl", label: "BRL", icon: <Icon icon="twemoji:flag-brazil" width="22" /> },
 ];
 
+const paypalCurrencies = new Set(["USD", "MXN", "BRL"]);
+const isPayPalEnabled = process.env.NEXT_PUBLIC_ENABLE_PAYPAL === "true";
+
 const Header = () => {
-  const [theme, setTheme] = useState('corporate');
-
   const { items, removeItem } = useSkinCart();
+  const { user: appUser } = useAppUser();
   const { currency } = useCurrency();
-  const { isSignedIn } = useSession();  // Verifica si el usuario está logueado
-
-  const router = useRouter();
+  const { isSignedIn } = useSession();
+  const { user } = useClerkUser();
+  const { signOut } = useClerk();
 
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat(undefined, {
@@ -44,32 +46,145 @@ const Header = () => {
     0
   );
 
-  useEffect(() => {
-    document.querySelector('html')?.setAttribute('data-theme', theme);
-  }, [theme])
+  const buildCheckoutItems = () =>
+    items.map((item: any) => {
+      const itemType = String(item?.brItems?.[0]?.type?.value || "").toLowerCase();
+      const vbucks = Number(item?.finalPrice ?? item?.vbucks ?? 0);
+      const eligibleForCashback = itemType === "outfit" && !item?.bundle;
+      const itemId = String(item?.brItems?.[0]?.id ?? item?.mainId ?? item?.newDisplayAsset?.cosmeticId ?? "");
+      const offerId = String(item?.offerId ?? item?.newDisplayAssetPath ?? "");
 
-  const handlePay = async () => {
-    const formatedItems = items.map((item: any) => ({
-      name: item.bundle?.name || item.brItems?.[0]?.name || item.tracks?.[0]?.title || "Producto",
-      price: Number(item.customPrice ?? item.price ?? 0),
-      customPrice: Number(item.customPrice ?? item.price ?? 0),
-      images: item?.newDisplayAsset?.renderImages?.[0]?.image || item?.tracks?.[0]?.albumArt || "",
-      quantity: item.quantity ?? 1,
-    }));
-
-    const response = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        items: formatedItems,
-        currency,
-      }),
+      return {
+        itemId,
+        offerId,
+        name: item.bundle?.name || item.brItems?.[0]?.name || item.tracks?.[0]?.title || "Producto",
+        price: Number(item.customPrice ?? item.price ?? 0),
+        customPrice: Number(item.customPrice ?? item.price ?? 0),
+        images: item?.newDisplayAsset?.renderImages?.[0]?.image || item?.tracks?.[0]?.albumArt || "",
+        quantity: item.quantity ?? 1,
+        vbucks,
+        eligibleForCashback,
+      };
     });
 
-    const { url } = await response.json();
-    window.location.href = url;
+  const handlePay = async () => {
+    const fortniteId = localStorage.getItem("fortniteId") || "";
+    const nickname = localStorage.getItem("nickname") || "";
+
+    if (!fortniteId) {
+      showToast.info("Primero guarda tu cuenta de Epic en la tienda", {
+        duration: 3500,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    const formatedItems = buildCheckoutItems();
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: formatedItems,
+          currency,
+          epicAccountId: fortniteId,
+          epicNickname: nickname,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.url) {
+        console.error('Checkout error:', data);
+        showToast.error(data?.error || 'No se pudo iniciar el checkout', {
+          duration: 3500,
+          position: 'top-right',
+        });
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Checkout request failed:', error);
+      showToast.error('Error de red al crear el checkout', {
+        duration: 3500,
+        position: 'top-right',
+      });
+    }
+  };
+
+  const handlePayPal = async () => {
+    if (!isPayPalEnabled) {
+      showToast.info("PayPal estara disponible pronto", {
+        duration: 2500,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    const fortniteId = localStorage.getItem("fortniteId") || "";
+    const nickname = localStorage.getItem("nickname") || "";
+
+    if (!fortniteId) {
+      showToast.info("Primero guarda tu cuenta de Epic en la tienda", {
+        duration: 3500,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    if (!paypalCurrencies.has(currency)) {
+      showToast.info("PayPal disponible solo en USD, MXN y BRL", {
+        duration: 3500,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    if (total <= 0) {
+      showToast.info("Tu carrito está vacío", {
+        duration: 2500,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          total: Number(total.toFixed(2)),
+          currency,
+          epicAccountId: fortniteId,
+          epicNickname: nickname,
+          items: buildCheckoutItems(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.url) {
+        showToast.error(data?.error || 'No se pudo iniciar PayPal', {
+          duration: 3500,
+          position: 'top-right',
+        });
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('PayPal request failed:', error);
+      showToast.error('Error de red al iniciar PayPal', {
+        duration: 3500,
+        position: 'top-right',
+      });
+    }
   };
 
   const handleCountryChange = (value: any) => {
@@ -93,16 +208,16 @@ const Header = () => {
   };
 
   return (
-    <div className="fixed z-1000 w-full flex flex-row items-center justify-between bg-black/10 backdrop-blur-md navbar shadow-sm px-8">
+    <div className="fixed z-1000 w-full flex flex-row items-center justify-between bg-black/10 backdrop-blur-md navbar shadow-sm px-3 md:px-8">
       <div className="flex items-center">
         <div className="flex-1 flex-row items-center justify-center mt-2">
-          <Link href="/" className="font-fortnite text-3xl text-white hover:opacity-80 transition">
+          <Link href="/" className="font-fortnite text-xl md:text-3xl text-white hover:opacity-80 transition">
             AQUAFORNAIS
           </Link>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 md:gap-3">
         <SelectedItems options={countryOptions} onChange={handleCountryChange} />
 
         <div className="drawer drawer-end">
@@ -210,22 +325,108 @@ const Header = () => {
                     className="btn btn-success btn-block gap-2"
                     onClick={handlePay}
                   >
-                    Comprar
+                    Pagar con tarjeta
                     <Icon icon="solar:wallet-money-bold" fontSize={22} />
                   </button>
+
+                  {isPayPalEnabled && (
+                    <>
+                      <button
+                        className="btn btn-info btn-block gap-2 mt-2"
+                        onClick={handlePayPal}
+                        disabled={!paypalCurrencies.has(currency)}
+                      >
+                        Pagar con PayPal
+                        <Icon icon="logos:paypal" fontSize={18} />
+                      </button>
+
+                      {!paypalCurrencies.has(currency) && (
+                        <p className="text-xs text-base-content/70 mt-2 text-center">
+                          PayPal solo acepta USD, MXN o BRL.
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Aquí verificamos si el usuario está logueado */}
         {isSignedIn ? (
-          <UserButton />
+          <div className="dropdown dropdown-end">
+            <button
+              tabIndex={0}
+              className="btn btn-ghost btn-circle avatar"
+              aria-label="Abrir menu de usuario"
+            >
+              <div className="w-9 rounded-full border border-white/25 overflow-hidden bg-black/25">
+                {user?.imageUrl ? (
+                  <img src={user.imageUrl} alt="avatar" />
+                ) : (
+                  <span className="grid h-full w-full place-items-center text-xs font-bold text-white">
+                    {user?.firstName?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                )}
+              </div>
+            </button>
+
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu mt-2 w-48 rounded-box border border-white/15 bg-[#0b1c3f] p-2 text-white shadow-lg"
+            >
+              <li className="pointer-events-none">
+                <span className="flex items-center gap-2 text-cyan-300">
+                  <Icon icon="solar:medal-ribbons-star-bold" width="18" />
+                  {Number(appUser?.aquacoins ?? 0).toLocaleString()} AQ
+                </span>
+              </li>
+              <li>
+                <Link href="/wishlist" className="flex items-center gap-2">
+                  <Icon icon="solar:heart-bold" width="18" />
+                  Wishlist
+                </Link>
+              </li>
+              <li>
+                <Link href="/aquacoins" className="flex items-center gap-2">
+                  <Icon icon="solar:medal-ribbons-star-bold" width="18" />
+                  AquaCoins
+                </Link>
+              </li>
+              <li>
+                <Link href="/aquacoins-shop" className="flex items-center gap-2">
+                  <Icon icon="solar:shop-2-bold" width="18" />
+                  Tienda AQ
+                </Link>
+              </li>
+              <li>
+                <Link href="/user" className="flex items-center gap-2">
+                  <Icon icon="solar:history-bold" width="18" />
+                  Historial
+                </Link>
+              </li>
+              <li>
+                <Link href="/user-profile" className="flex items-center gap-2">
+                  <Icon icon="solar:user-id-bold" width="18" />
+                  Mi cuenta
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={() => signOut({ redirectUrl: "/" })}
+                  className="flex items-center gap-2"
+                >
+                  <Icon icon="solar:logout-3-bold" width="18" />
+                  Cerrar sesion
+                </button>
+              </li>
+            </ul>
+          </div>
         ) : (
           <SignInButton mode="modal">
-            <button className="btn btn-primary m-0 p-0 w-30">
-              Iniciar Sesión
+            <button className="btn btn-primary btn-sm md:btn-md m-0 px-2 md:px-4 w-auto whitespace-nowrap">
+              <span className="text-xs md:hidden">Entrar</span>
+              <span className="hidden md:inline">Iniciar Sesión</span>
             </button>
           </SignInButton>
         )}

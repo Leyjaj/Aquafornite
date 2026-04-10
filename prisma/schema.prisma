@@ -17,7 +17,7 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  aquacoins Int     @default(0)
+  aquacoins Int     @default(100)
   discordId String? @unique
 
   sessions         Session[]
@@ -77,6 +77,9 @@ model Purchase {
   amountUSD Float
   vbucks    Int
   cashback  Int
+  epicAccountId String?
+  epicNickname  String?
+  itemsSummary  String?
   createdAt DateTime @default(now())
 
   status String @default("pending")
@@ -91,6 +94,7 @@ model AquacoinsHistory {
   id        String   @id @default(cuid())
   user_id   String
   amount    Int
+  source    String   @default("recharge")
   createdAt DateTime @default(now())
 
   user User @relation(fields: [user_id], references: [id])

@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
           data: {
             user_id: userId,
             amount: coins.quantity,
+            source: "recharge",
           },
         });
 
@@ -58,11 +59,15 @@ export async function POST(req: NextRequest) {
       // 🟨 COMPRA SKINS / VBUCKS + CASHBACK
       // ======================================
       else {
-        const items = JSON.parse(session.metadata?.items || "[]");
         const total = session.amount_total! / 100;
 
-        const vbucks = items?.[0]?.vbucks || 0;
-        const cashback = Math.floor(vbucks * 0.1);
+        const legacyItems = JSON.parse(session.metadata?.items || "[]");
+        const metadataVbucks = Number(session.metadata?.vbucksTotal ?? 0);
+        const metadataCashbackEligible = Number(session.metadata?.cashbackEligibleVbucks ?? 0);
+
+        const vbucks = metadataVbucks || legacyItems?.[0]?.vbucks || 0;
+        const cashbackEligibleVbucks = metadataCashbackEligible || 0;
+        const cashback = Math.floor(cashbackEligibleVbucks * 0.1);
 
         // 🔥 Guardar compra en tabla Purchase (según tu schema)
         await prisma.purchase.create({
@@ -71,6 +76,9 @@ export async function POST(req: NextRequest) {
             amountUSD: total,
             vbucks: vbucks,
             cashback: cashback,
+            paymentMethod: "stripe",
+            status: "confirmed",
+            confirmedAt: new Date(),
           },
         });
 
@@ -91,6 +99,7 @@ export async function POST(req: NextRequest) {
             data: {
               user_id: userId,
               amount: cashback,
+              source: "cashback",
             },
           });
 

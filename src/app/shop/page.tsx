@@ -1,25 +1,35 @@
 import Skins from '@/components/Skins';
 import { getSkins } from "@/lib/getSkins";
+import { cookies } from "next/headers";
+import Link from "next/link";
 
 export default async function Shop() {
-  const { skins, categories } = await getSkins();
+  const cookieStore = await cookies();
+  const rawLang = cookieStore.get("siteLang")?.value;
+  const lang = rawLang === "en" || rawLang === "pt" ? rawLang : "es";
 
-  // Recuperamos Fortnite ID y Nickname desde localStorage
-  const fortniteId = typeof window !== 'undefined' ? localStorage.getItem('fortniteId') : null;
-  const nickname = typeof window !== 'undefined' ? localStorage.getItem('nickname') : null;
+  const { skins, categories, nextRotation } = await getSkins(lang);
 
-  // Verifica si tenemos ambos valores
-  if (fortniteId && nickname) {
-    // Lógica para proceder con la compra rápida, o directamente al checkout
-    console.log('Fortnite ID:', fortniteId);
-    console.log('Nickname:', nickname);
-
-    // Se podría añadir la lógica de checkout aquí, como redirigir al usuario con el Fortnite ID y Nickname
-  }
+  const catalogLabel =
+    lang === "en"
+      ? "Browse full cosmetics catalog"
+      : lang === "pt"
+      ? "Ver catalogo completo de cosmeticos"
+      : "Ver catalogo completo de cosmeticos";
 
   return (
     <div>
-      <Skins skins={skins} categories={categories} />
+      <div className="px-4 pt-6">
+        <div className="mx-auto max-w-7xl rounded-2xl border border-white/15 bg-black/25 p-3 text-white backdrop-blur-md">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm md:text-base text-white/80">{catalogLabel}</p>
+            <Link href="/cosmeticos" className="btn btn-sm btn-primary">
+              {lang === "en" ? "All Cosmetics" : "Todos los cosmeticos"}
+            </Link>
+          </div>
+        </div>
+      </div>
+      <Skins skins={skins} categories={categories} lang={lang} nextRotationAt={nextRotation} />
     </div>
   );
 }

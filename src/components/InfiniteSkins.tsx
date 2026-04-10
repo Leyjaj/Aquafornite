@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Skin from "@/interfaces/skin.interface";
 import { useSkinCart } from "@/hooks/useSkinCart";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useSession } from "@clerk/nextjs";
+import { showToast } from "nextjs-toast-notify";
 
 interface Layout {
   id: string;
@@ -17,51 +19,33 @@ interface Props {
   groupedSkins: Record<string, { layout: Layout; skins: Skin[] }>;
 }
 
-const toggleWishlist = async (item: any, isSaved: boolean, setSaved: any) => {
-  if (isSaved) {
-    await fetch("/api/wishlist", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ skinId: item.id }),
-    });
-    setSaved(false);
-  } else {
-    await fetch("/api/wishlist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        skinId: item.id,
-        name: item.name,
-        image: item.images?.icon || item.image,
-        price: item.price,
-      }),
-    });
-    setSaved(true);
-  }
-};
-
-function WishlistButton({ item }: { item: any }) {
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      const res = await fetch("/api/wishlist");
-      const data = await res.json();
-      if (data.some((w: any) => w.skinId === item.id)) {
-        setSaved(true);
-      }
-    };
-    load();
-  }, [item.id]);
+function WishlistButton({
+  canUseWishlist,
+  isSaved,
+  onToggle,
+}: {
+  canUseWishlist: boolean;
+  isSaved: boolean;
+  onToggle: () => void;
+}) {
+  if (!canUseWishlist) return null;
 
   return (
     <button
+      type="button"
+      data-wishlist-button="true"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+      }}
+      onTouchStart={(e) => {
+        e.stopPropagation();
+      }}
       onClick={(e) => {
         e.stopPropagation();
-        toggleWishlist(item, saved, setSaved);
+        onToggle();
       }}
-      className={`absolute top-2 right-2 z-20 text-xl ${
-        saved ? "text-red-500" : "text-white"
+      className={`absolute top-2 right-2 z-20 grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-black/45 text-xl backdrop-blur-sm transition ${
+        isSaved ? "text-red-500" : "text-white"
       }`}
     >
       ♥
@@ -80,20 +64,8 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   const isMobile = useIsMobile();
   const { currency } = useCurrency();
   const { addItem } = useSkinCart();
-
-  const sizeSkin: Record<string, string> = {
-    Size_4_x_1: "col-span-1 sm:col-span-1 md:col-span-4",
-    Size_3_x_1: "col-span-1 sm:col-span-1 md:col-span-3",
-    Size_2_x_1: "col-span-1 sm:col-span-1 md:col-span-2",
-    Size_1_x_1: "col-span-1",
-  };
-
-  const heightByTile: Record<string, string> = {
-    Size_4_x_1: "h-[400px] md:h-[550px]",
-    Size_3_x_1: "h-[380px] md:h-[500px]",
-    Size_2_x_1: "h-[320px] md:h-[450px]",
-    Size_1_x_1: "h-[280px] md:h-[380px]",
-  };
+  const { isSignedIn, isLoaded } = useSession();
+  const [savedSkinIds, setSavedSkinIds] = useState<Set<string>>(new Set());
 
   const pricePer100: Record<string, number> = {
     USD: 0.36,
@@ -107,6 +79,101 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   };
 
   const pricePerVbuck = (pricePer100[currency] ?? 0.36) / 100;
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) {
+      setSavedSkinIds(new Set());
+      return;
+    }
+
+    const loadWishlist = async () => {
+      try {
+        const res = await fetch("/api/wishlist");
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const nextIds = new Set<string>(
+          Array.isArray(data)
+            ? data.map((item: any) => String(item.skinId)).filter(Boolean)
+            : []
+        );
+
+        setSavedSkinIds(nextIds);
+      } catch {
+        setSavedSkinIds(new Set());
+      }
+    };
+
+    loadWishlist();
+  }, [isLoaded, isSignedIn]);
+
+  const toggleWishlist = async (item: {
+    id: string;
+    name: string;
+    image: string;
+    price: number;
+  }) => {
+    if (!isSignedIn) {
+      showToast.info("Inicia sesión para usar wishlist", {
+        duration: 2500,
+        position: "top-right",
+      });
+      return;
+    }
+
+    if (!item.id) {
+      showToast.error("No se pudo identificar esta skin", {
+        duration: 2500,
+        position: "top-right",
+      });
+      return;
+    }
+
+    const alreadySaved = savedSkinIds.has(item.id);
+
+    try {
+      const response = await fetch("/api/wishlist", {
+        method: alreadySaved ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          alreadySaved
+            ? { skinId: item.id }
+            : {
+                skinId: item.id,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+              }
+        ),
+      });
+
+      if (!response.ok) return;
+
+      setSavedSkinIds((prev) => {
+        const next = new Set(prev);
+        if (alreadySaved) next.delete(item.id);
+        else next.add(item.id);
+        return next;
+      });
+
+      showToast.success(alreadySaved ? "Quitado de wishlist" : "Agregado a wishlist", {
+        duration: 1700,
+        position: "top-right",
+      });
+    } catch {
+      showToast.error("Error al actualizar wishlist", {
+        duration: 2500,
+        position: "top-right",
+      });
+      return;
+    }
+  };
+
+  const visibleCategories = useMemo(
+    () => categories.slice(0, visibleCount),
+    [categories, visibleCount]
+  );
 
   useEffect(() => {
     if (!observerRef.current) return;
@@ -154,12 +221,22 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   };
 
   return (
-    <section className="p-6">
-      {categories.slice(0, visibleCount).map(([key, value]) => (
-        <div className="flex flex-col" key={key}>
-          <h2 className="text-3xl font-semibold mt-8 text-white">{key}</h2>
+    <section className="px-1 py-4 md:px-4 md:py-6">
+      {visibleCategories.map(([key, value]) => (
+        <div
+          className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-2.5 md:p-4"
+          key={key}
+        >
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-white md:text-base">
+              {key}
+            </h2>
+            <span className="rounded-full bg-white/10 px-2 py-1 text-[11px] font-semibold text-white/80 md:text-xs">
+              {value?.skins?.length ?? 0} items
+            </span>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {Array.isArray(value?.skins) &&
               value.skins.map((skin, idx) => {
                 const renderImages = Array.isArray(
@@ -177,8 +254,6 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
 
                 if (!imageSrc) return null;
 
-                const tileSize = (skin as any).tileSize || "Size_1_x_1";
-
                 const displayName =
                   (skin as any)?.bundle?.name ||
                   (skin as any)?.brItems?.[0]?.name ||
@@ -188,6 +263,14 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
 
                 const finalPrice = (skin as any)?.finalPrice ?? 0;
                 const converted = finalPrice * pricePerVbuck;
+                const skinId = String(
+                  (skin as any)?.brItems?.[0]?.id ??
+                    (skin as any)?.mainId ??
+                    (skin as any)?.id ??
+                    (skin as any)?.offerId ??
+                    tracks?.[0]?.id ??
+                    ""
+                );
 
                 const skinWithPrice = {
                   ...skin,
@@ -198,56 +281,62 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
                 return (
                   <div
                     key={idx}
-                    onClick={() => {
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[data-wishlist-button="true"]')) return;
+
                       if (isMobile) addItem(skinWithPrice as any);
                     }}
-                    className={`${
-                      sizeSkin[tileSize] ?? "col-span-1"
-                    } group rounded-xl overflow-hidden outline-[4px] outline-transparent hover:outline-blue-100 transition-all duration-300 ease-in-out flex flex-col w-full ${
-                      heightByTile[tileSize]
-                    } relative cursor-pointer shadow-[0px_0px_80px_-44px_rgba(0,_0,_0,_0.7)]`}
+                    className="group relative aspect-square cursor-pointer overflow-hidden rounded-xl border border-white/15 shadow-[0px_8px_24px_-14px_rgba(0,0,0,0.7)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0px_10px_30px_-10px_rgba(0,0,0,0.85)]"
                     style={getBackgroundStyle(skin)}
                   >
-                    <WishlistButton item={{ ...skin, id: skin.id, name: displayName, image: imageSrc, price: finalPrice }} />
+                    <WishlistButton
+                      canUseWishlist={Boolean(isSignedIn)}
+                      isSaved={savedSkinIds.has(skinId)}
+                      onToggle={() =>
+                        toggleWishlist({
+                          id: skinId,
+                          name: displayName,
+                          image: imageSrc,
+                          price: finalPrice,
+                        })
+                      }
+                    />
 
-                    <div className="relative w-full flex-1 flex items-center justify-center p-4 overflow-hidden">
+                    <div className="relative h-full w-full overflow-hidden">
                       <Image
                         fill
                         src={imageSrc}
                         alt={displayName}
-                        className={`object-contain object-center transition-transform duration-500 group-hover:scale-105 ${
-                          tileSize === "Size_1_x_1" ? "scale-110" : ""
-                        } ${
-                          tileSize === "Size_2_x_1" ? "scale-105" : ""
-                        } ${
-                          tileSize === "Size_4_x_1" ? "scale-95" : ""
-                        }`}
+                        className="object-contain object-center p-2 transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
 
-                    <div className="w-full px-4 pb-4 bg-gradient-to-t from-zinc-900/90 to-transparent">
-                      <div className="flex flex-col">
-                        <span className="text-white font-semibold text-lg truncate">
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-2.5 pb-2 pt-6">
+                      <div className="flex flex-col leading-tight">
+                        <span className="truncate text-xs font-semibold text-white md:text-sm">
                           {displayName}
                         </span>
-                        <span className="text-white/75 text-sm">
-                          {finalPrice} V-BUCKS -{" "}
+                        <span className="text-[11px] text-white/80 md:text-xs">
+                          {finalPrice} V-Bucks
+                        </span>
+                        <span className="text-[11px] text-white/80 md:text-xs">
                           {formatPrice(converted)} {currency}
                         </span>
                       </div>
-
-                      {!isMobile && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addItem(skinWithPrice as any);
-                          }}
-                          className="btn mt-2 w-full btn-primary text-white font-medium"
-                        >
-                          Agregar al carrito
-                        </button>
-                      )}
                     </div>
+
+                    {!isMobile && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addItem(skinWithPrice as any);
+                        }}
+                        className="btn btn-sm btn-primary absolute bottom-2 right-2 z-30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      >
+                        + carrito
+                      </button>
+                    )}
                   </div>
                 );
               })}

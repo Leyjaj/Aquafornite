@@ -6,13 +6,33 @@ interface Layout {
   rank: number;
 }
 
-export async function getSkins() {
-  const res = await fetch("https://fortnite-api.com/v2/shop?language=es-419", {
+type SupportedLang = "es" | "en" | "pt";
+
+const languageMap: Record<SupportedLang, string> = {
+  es: "es-419",
+  en: "en",
+  pt: "pt-BR",
+};
+
+const allCategoryMap: Record<SupportedLang, string> = {
+  es: "Todos",
+  en: "All",
+  pt: "Todos",
+};
+
+export async function getSkins(lang: SupportedLang = "es") {
+  const shopLanguage = languageMap[lang] || "es-419";
+
+  const res = await fetch(`https://fortnite-api.com/v2/shop?language=${shopLanguage}`, {
     cache: "no-store",
     next: { revalidate: 0 },
   });
 
   const data = await res.json();
+  const shopDate = data?.data?.date ? new Date(data.data.date) : null;
+  const nextRotation = shopDate
+    ? new Date(shopDate.getTime() + 24 * 60 * 60 * 1000).toISOString()
+    : null;
 
   const skinsRate = data.data.entries;
 
@@ -62,7 +82,7 @@ export async function getSkins() {
 
   filteredSkins = test;
 
-  const categories = ["Todos", ...Object.keys(test)];
+  const categories = [allCategoryMap[lang] || allCategoryMap.es, ...Object.keys(test)];
 
-  return { skins, categories };
+  return { skins, categories, nextRotation };
 }

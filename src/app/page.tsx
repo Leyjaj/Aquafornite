@@ -2,21 +2,37 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSession } from "@/lib/auth-client";
 import PaymentMarquee from "@/components/PaymentMarquee";
 
 type Lang = "en" | "es" | "pt";
 
 export default function HomePage() {
-  const { data: session } = useSession();
   const [lang, setLang] = useState<Lang>("en");
 
-  useEffect(() => {
-    const browserLang = navigator.language.toLowerCase();
+  const setLangPreference = (nextLang: Lang) => {
+    setLang(nextLang);
+    localStorage.setItem("siteLang", nextLang);
+    document.cookie = `siteLang=${nextLang}; path=/; max-age=31536000; SameSite=Lax`;
+  };
 
-    if (browserLang.startsWith("pt")) setLang("pt");
-    else if (browserLang.startsWith("es")) setLang("es");
-    else setLang("en");
+  useEffect(() => {
+    const savedLang = localStorage.getItem("siteLang") as Lang | null;
+    if (savedLang === "es" || savedLang === "en" || savedLang === "pt") {
+      setLang(savedLang);
+      document.cookie = `siteLang=${savedLang}; path=/; max-age=31536000; SameSite=Lax`;
+      return;
+    }
+
+    const browserLang = navigator.language.toLowerCase();
+    const detectedLang: Lang = browserLang.startsWith("pt")
+      ? "pt"
+      : browserLang.startsWith("es")
+      ? "es"
+      : "en";
+
+    setLang(detectedLang);
+    localStorage.setItem("siteLang", detectedLang);
+    document.cookie = `siteLang=${detectedLang}; path=/; max-age=31536000; SameSite=Lax`;
   }, []);
 
   const t = {
@@ -29,6 +45,7 @@ export default function HomePage() {
       skins: "Skins 👕👖",
       bots: "Accounts / Bots",
       offers: "Offers",
+      allSkins: "Skin Catalog",
       club: "Fortnite Club",
       terms: "Terms and Conditions",
       refunds: "Refund Policy",
@@ -44,6 +61,7 @@ export default function HomePage() {
       skins: "Skins 👕👖",
       bots: "Cuentas / Bots",
       offers: "Ofertas",
+      allSkins: "Catalogo de Skins",
       club: "Club Fortnite",
       terms: "Términos y condiciones",
       refunds: "Política de reembolsos",
@@ -59,6 +77,7 @@ export default function HomePage() {
       skins: "Skins 👕👖",
       bots: "Contas / Bots",
       offers: "Ofertas",
+      allSkins: "Catalogo de Skins",
       club: "Clube Fortnite",
       terms: "Termos e Condições",
       refunds: "Política de Reembolso",
@@ -100,11 +119,12 @@ export default function HomePage() {
           </Link>
 
           <Link href="/pavos" className={cardStyle}>{text.pavos}</Link>
-          <Link href="/lotes" className={cardStyle}>{text.bundles}</Link>
-          <Link href="/club" className={cardStyle}>{text.club}</Link>
-          <Link href="/otros-juegos" className={cardStyle}>{text.recharge}</Link>
+          <Link href="/pavos" className={cardStyle}>{text.bundles}</Link>
+          <Link href="/aquacoins" className={cardStyle}>{text.club}</Link>
+          <Link href="/recharge" className={cardStyle}>{text.recharge}</Link>
           <Link href="/cuentas-bots" className={cardStyle}>{text.bots}</Link>
-          <Link href="/ofertas" className={cardStyle}>{text.offers}</Link>
+          <Link href="/shop" className={cardStyle}>{text.offers}</Link>
+          <Link href="/cosmeticos" className={cardStyle}>{text.allSkins}</Link>
 
         </div>
       </section>
@@ -131,9 +151,9 @@ export default function HomePage() {
               </button>
 
               <ul className="dropdown-content menu p-2 shadow bg-[#0b1c3f] rounded-box w-48 text-white">
-                <li><button onClick={() => setLang("en")}>English</button></li>
-                <li><button onClick={() => setLang("es")}>Español</button></li>
-                <li><button onClick={() => setLang("pt")}>Português</button></li>
+                <li><button onClick={() => setLangPreference("en")}>English</button></li>
+                <li><button onClick={() => setLangPreference("es")}>Español</button></li>
+                <li><button onClick={() => setLangPreference("pt")}>Português</button></li>
               </ul>
 
             </div>

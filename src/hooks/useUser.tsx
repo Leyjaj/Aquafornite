@@ -1,8 +1,14 @@
 'use client'
 import useSWR from "swr";
 import {createContext, useContext, ReactNode} from "react";
+import { useAuth } from "@clerk/nextjs";
 
-const fetcher = (url:string) => fetch(url).then(res=>res.json());
+const fetcher = async (url: string) => {
+    const res = await fetch(url);
+    if (res.status === 401) return null;
+    if (!res.ok) throw new Error("Error al cargar perfil");
+    return res.json();
+};
 interface UserData{
     id:string;
     name:string;
@@ -17,7 +23,19 @@ interface UserData{
 const UserContext = createContext<{user: UserData | null; isLoading: boolean;}|null>(null);
 
 export function UserProvider({children}:{children:ReactNode}){
-    const {data:user, error,isLoading} = useSWR<UserData>("/api/profile", fetcher);
+    const { isLoaded, isSignedIn } = useAuth();
+
+    const shouldFetchProfile = isLoaded && isSignedIn;
+
+    const {data:user, isLoading} = useSWR<UserData | null>(
+        shouldFetchProfile ? "/api/profile" : null,
+        fetcher,
+        {
+            shouldRetryOnError: false,
+            revalidateOnFocus: false,
+        }
+    );
+
     return (
         <UserContext.Provider value={{user:user || null, isLoading}}>
             {children}

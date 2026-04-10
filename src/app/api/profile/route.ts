@@ -1,39 +1,43 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { PrismaClient } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const prisma = new PrismaClient();
-
 export async function GET() {
   try {
-    // 🔥 Next 15 -> headers() ES ASYNC
-    const h = await headers();
+    const { userId } = await auth();
 
-    const hh = new Headers();
-    h.forEach((v, k) => hh.set(k, v));
-
-    const session = await auth.api.getSession({
-      headers: hh,
-    });
-
-    if (!session) {
+    if (!userId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    let user = await prisma.user.findUnique({
+      where: { clerkId: userId },
       select: {
         id: true,
         email: true,
+        name: true,
+        image: true,
         aquacoins: true,
       },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      user = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: `${userId}@temp.com`,
+          aquacoins: 100,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          aquacoins: true,
+        },
+      });
     }
 
     return NextResponse.json(user);

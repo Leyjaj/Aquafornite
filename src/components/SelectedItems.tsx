@@ -1,5 +1,4 @@
 import { useCurrency } from "@/hooks/useCurrency";
-import { useState } from "react";
 
 interface Option{
     id:string|number
@@ -15,11 +14,13 @@ interface CustomSelectProps{
 
 export default function SelectedItems({options, value, onChange}:CustomSelectProps) {
 
-    const [selected, setSelected] = useState(options[0]);
-    const { setCurrency } = useCurrency()
+    const { currency, setCurrency } = useCurrency()
+
+    const selected =
+        options.find((option) => String(option.label).toUpperCase() === String(currency).toUpperCase()) ||
+        options[0];
 
     const handleSelect = (option: Option) =>{
-        setSelected(option)
         setCurrency(option.label)
         if(onChange) onChange(option)
     }
@@ -31,9 +32,10 @@ export default function SelectedItems({options, value, onChange}:CustomSelectPro
             <div
                 tabIndex={0}
                 role="button"
-                className="btn m-1 bg-transparent border-none text-white hover:bg-white/10"
+                className="btn btn-sm md:btn-md m-0 h-9 min-h-9 px-2 md:h-10 md:min-h-10 md:px-3 bg-transparent border-none text-white hover:bg-white/10"
             >
-                {selected.icon} {selected.label}
+                {selected.icon}
+                <span className="text-xs md:text-sm">{selected.label}</span>
             </div>
 
             <ul

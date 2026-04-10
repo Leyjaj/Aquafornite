@@ -4,18 +4,16 @@ import { auth } from "@clerk/nextjs/server";
 // Función para obtener los detalles de una skin desde la API de Fortnite
 async function fetchSkinDetails(skinId: string) {
   try {
-    // Hacemos la solicitud a la API de Fortnite para obtener los detalles de la skin
     const response = await fetch(`https://fortnite-api.com/api/v1/cosmetics/br/${skinId}`);
-    const data = await response.json();
-    
-    if (!data || !data.data) {
-      throw new Error('No se encontraron datos para esta skin.');
-    }
+    if (!response.ok) return null;
 
-    return data.data;  // Devolver la información de la skin
+    const data = await response.json();
+    if (!data || !data.data) return null;
+
+    return data.data;
   } catch (error) {
     console.error(error);
-    throw new Error('Error al obtener los detalles de la skin desde la API de Fortnite.');
+    return null;
   }
 }
 
@@ -34,6 +32,7 @@ export async function GET() {
       data: {
         clerkId: userId,
         email: `${userId}@temp.com`,
+        aquacoins: 100,
       },
     });
   }
@@ -61,26 +60,46 @@ export async function POST(req: Request) {
       data: {
         clerkId: userId,
         email: `${userId}@temp.com`,
+        aquacoins: 100,
       },
     });
   }
 
   // Validamos que los campos necesarios estén presentes
-  if (!body.skinId || !body.name || !body.price) {
+  if (!body.skinId || !body.name || body.price === undefined || body.price === null) {
     return new Response("Faltan datos para guardar en la wishlist", { status: 400 });
   }
 
   try {
-    // Obtener detalles de la skin usando la API de Fortnite
-    const skinDetails = await fetchSkinDetails(body.skinId); 
+    const skinDetails = await fetchSkinDetails(body.skinId);
+    const skinPrice = Number(body.price);
 
-    await prisma.wishlist.create({
-      data: {
+    await prisma.wishlist.upsert({
+      where: {
+        userId_skinId: {
+          userId: user.id,
+          skinId: body.skinId,
+        },
+      },
+      create: {
         userId: user.id,
-        skinId: body.skinId,  // Asegúrate de pasar skinId correctamente
-        name: skinDetails.name || body.name,  // Usar nombre de la API o el que pasa el cliente
-        image: skinDetails.image || body.image || "",  // Si no hay imagen, dejamos vacío
-        price: skinDetails.price || body.price,  // Usar precio de la API o el que pasa el cliente
+        skinId: body.skinId,
+        name: skinDetails?.name || body.name,
+        image:
+          skinDetails?.images?.icon ||
+          skinDetails?.images?.smallIcon ||
+          body.image ||
+          "",
+        price: Number.isFinite(skinPrice) ? Math.round(skinPrice) : 0,
+      },
+      update: {
+        name: skinDetails?.name || body.name,
+        image:
+          skinDetails?.images?.icon ||
+          skinDetails?.images?.smallIcon ||
+          body.image ||
+          "",
+        price: Number.isFinite(skinPrice) ? Math.round(skinPrice) : 0,
       },
     });
 
