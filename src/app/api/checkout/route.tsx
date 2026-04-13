@@ -72,9 +72,9 @@ export async function POST(req: NextRequest) {
     }
 
     // 🔥 CONTROL DE CUPONES POR PRODUCTO
-    // Si TODOS los productos permiten cupones → true
-    // Si alguno NO → false
-    const allowCoupons = items.every((item) => item.allowCoupons === true);
+    // Shop normal: por default permitido
+    // Pavos/otros: deben mandar allowCoupons=false explícito
+    const allowCoupons = items.length > 0 && items.every((item) => item.allowCoupons !== false);
 
     const lineItems = items.map((item) => {
       const price = item.customPrice ?? item.price ?? 0;

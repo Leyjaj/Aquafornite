@@ -84,6 +84,7 @@ const Header = () => {
         quantity: item.quantity ?? 1,
         vbucks,
         eligibleForCashback,
+        allowCoupons: true,
       };
     });
 
