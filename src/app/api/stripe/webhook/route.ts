@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
         const legacyItems = JSON.parse(session.metadata?.items || "[]");
         const metadataVbucks = Number(session.metadata?.vbucksTotal ?? 0);
         const metadataCashbackEligible = Number(session.metadata?.cashbackEligibleVbucks ?? 0);
+        const isGuest = String(session.metadata?.isGuest ?? "0") === "1";
 
         const vbucks = metadataVbucks || legacyItems?.[0]?.vbucks || 0;
         const cashbackEligibleVbucks = metadataCashbackEligible || 0;
@@ -98,7 +99,7 @@ export async function POST(req: NextRequest) {
               },
             });
 
-            if (cashback > 0) {
+            if (cashback > 0 && !isGuest) {
               await tx.user.update({
                 where: { id: userId },
                 data: {

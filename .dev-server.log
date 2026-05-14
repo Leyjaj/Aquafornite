@@ -1,0 +1,94 @@
+
+> out@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.7 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://100.115.235.61:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 738ms
+ ✓ Ready in 3.5s
+ ⚠ Webpack is configured while Turbopack is not, which may cause problems.
+ ⚠ See instructions if you need to configure Turbopack:
+  https://nextjs.org/docs/app/api-reference/next-config-js/turbopack
+
+ ○ Compiling /prueba-principal ...
+/*! 🌼 daisyUI 5.2.3 */
+ ✓ Compiled /prueba-principal in 7.7s
+ GET /prueba-principal 200 in 8537ms
+ GET /prueba-principal 200 in 240ms
+ ✓ Compiled middleware in 3ms
+ GET /prueba-principal 200 in 389ms
+ GET /prueba-principal 200 in 129ms
+ ✓ Compiled in 470ms
+ ✓ Compiled /api/shop/bundles in 412ms
+ GET /api/shop/bundles?lang=en 200 in 1556ms
+ GET /api/shop/bundles?lang=es 200 in 1525ms
+ GET /prueba-principal 200 in 436ms
+ GET /api/shop/bundles?lang=es 200 in 1099ms
+ ✓ Compiled in 458ms
+ GET /prueba-principal 200 in 391ms
+ GET /prueba-principal 200 in 259ms
+ GET /prueba-principal 200 in 237ms
+ ✓ Compiled in 484ms
+ GET /api/shop/bundles?lang=en 200 in 1084ms
+ GET /api/shop/bundles?lang=es 200 in 1108ms
+ GET /prueba-principal 200 in 397ms
+ ✓ Compiled in 484ms
+ GET /prueba-principal 200 in 441ms
+ GET /prueba-principal 200 in 200ms
+ ✓ Compiled /favicon.ico in 241ms
+ GET /favicon.ico?favicon.d2e4a5b3.ico 200 in 600ms
+ GET /api/shop/bundles?lang=en 200 in 1146ms
+ GET /api/shop/bundles?lang=es 200 in 1161ms
+ ✓ Compiled in 670ms
+ GET /prueba-principal 200 in 366ms
+ ✓ Compiled in 457ms
+ GET /prueba-principal 200 in 381ms
+ ✓ Compiled in 472ms
+ GET /prueba-principal 200 in 380ms
+ GET /prueba-principal 200 in 203ms
+ GET /favicon.ico?favicon.d2e4a5b3.ico 200 in 409ms
+ GET /api/shop/bundles?lang=es 200 in 1102ms
+ GET /api/shop/bundles?lang=en 200 in 1220ms
+ ✓ Compiled in 497ms
+ GET /prueba-principal 200 in 373ms
+ ✓ Compiled in 459ms
+ GET /prueba-principal 200 in 375ms
+ ✓ Compiled in 717ms
+ GET /prueba-principal 200 in 471ms
+ GET /api/shop/bundles?lang=es 200 in 1410ms
+ ✓ Compiled in 436ms
+ GET /prueba-principal 200 in 452ms
+ GET /prueba-principal 200 in 195ms
+ GET /favicon.ico?favicon.d2e4a5b3.ico 200 in 310ms
+ GET /api/shop/bundles?lang=en 200 in 1154ms
+ GET /api/shop/bundles?lang=es 200 in 1222ms
+ ✓ Compiled in 491ms
+ ✓ Compiled in 509ms
+ GET /prueba-principal 200 in 493ms
+ ✓ Compiled in 531ms
+ GET /api/shop/bundles?lang=en 200 in 1161ms
+ GET /api/shop/bundles?lang=es 200 in 1129ms
+ GET /prueba-principal 200 in 457ms
+ ✓ Compiled in 493ms
+ ✓ Compiled in 467ms
+ ✓ Compiled in 332ms
+ ○ Compiling /shop ...
+ ✓ Compiled /shop in 988ms
+ GET /shop 200 in 1995ms
+ ✓ Compiled /api/epic/resolve in 189ms
+ GET /api/epic/resolve?name=leyjajOM 200 in 1155ms
+ ○ Compiling /api/checkout ...
+ ✓ Compiled /api/checkout in 601ms
+ POST /api/checkout 401 in 1279ms
+ POST /api/checkout 401 in 318ms
+ POST /api/checkout 401 in 310ms
+ POST /api/checkout 400 in 358ms
+ ✓ Compiled /api/paypal/create-order in 203ms
+ POST /api/paypal/create-order 503 in 494ms

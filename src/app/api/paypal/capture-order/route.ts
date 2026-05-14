@@ -71,6 +71,9 @@ export async function POST(req: Request) {
     const userId = segmentMap.uid;
     const totalVbucks = Number(segmentMap.tv ?? 0);
     const cashbackEligibleVbucks = Number(segmentMap.cv ?? 0);
+    const isGuest = String(segmentMap.g ?? "0") === "1";
+    const epicAccountId = String(segmentMap.eid ?? "") || null;
+    const currency = String(segmentMap.cur ?? "USD").toUpperCase();
     const cashback = Math.floor(cashbackEligibleVbucks * 0.1);
 
     if (userId) {
@@ -78,15 +81,17 @@ export async function POST(req: Request) {
         data: {
           userId,
           amountUSD: Number.isFinite(amountValue) ? amountValue : 0,
+          currency,
           vbucks: Number.isFinite(totalVbucks) ? totalVbucks : 0,
           cashback,
+          epicAccountId,
           paymentMethod: "paypal",
           status: "confirmed",
           confirmedAt: new Date(),
         },
       });
 
-      if (cashback > 0) {
+      if (cashback > 0 && !isGuest) {
         await prisma.user.update({
           where: { id: userId },
           data: {

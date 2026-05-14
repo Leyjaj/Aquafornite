@@ -26,14 +26,14 @@ const countryOptions = [
 const paypalCurrencies = new Set(["USD", "MXN", "BRL"]);
 const isPayPalEnabled = process.env.NEXT_PUBLIC_ENABLE_PAYPAL === "true";
 const pricePer100: Record<string, number> = {
-  USD: 0.36,
-  MXN: 6.5,
-  PEN: 1.3,
-  EUR: 0.32,
-  COP: 1300,
+  USD: 0.4,
+  MXN: 7,
+  PEN: 1.4,
+  EUR: 0.34,
+  COP: 1600,
   CLP: 330,
-  BOB: 2.5,
-  BRL: 1.9,
+  BOB: 2.7,
+  BRL: 2,
 };
 
 const Header = () => {

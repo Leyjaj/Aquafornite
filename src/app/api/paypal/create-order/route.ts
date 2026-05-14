@@ -33,22 +33,7 @@ export async function POST(req: Request) {
     }
 
     const { userId: clerkUserId } = await auth();
-
-    if (!clerkUserId) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    let user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          clerkId: clerkUserId,
-          email: `${clerkUserId}@temp.com`,
-          aquacoins: 100,
-        },
-      });
-    }
+    const isGuest = !clerkUserId;
 
     const { total, currency, epicAccountId, epicNickname, items } = await req.json();
     const normalizedCurrency = String(currency ?? "USD").toUpperCase();
@@ -83,10 +68,42 @@ export async function POST(req: Request) {
       );
     }
 
+    let user = null;
+
+    if (clerkUserId) {
+      user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            clerkId: clerkUserId,
+            email: `${clerkUserId}@temp.com`,
+            aquacoins: 100,
+          },
+        });
+      }
+    } else {
+      const guestKey = normalizedEpicId.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase().slice(0, 40) || "epicguest";
+      const guestEmail = `guest+${guestKey}@aquafornais.guest`;
+
+      user = await prisma.user.findUnique({ where: { email: guestEmail } });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: guestEmail,
+            name: normalizedEpicName || `Guest ${normalizedEpicId.slice(0, 16)}`,
+            aquacoins: 100,
+          },
+        });
+      }
+    }
+
     const accessToken = await getAccessToken();
     const totalAsString = parsedTotal.toFixed(2);
     const appUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
-    const customId = `uid:${user.id}|tv:${totalVbucks}|cv:${cashbackEligibleVbucks}`;
+    const safeEpicId = normalizedEpicId.replace(/[|:]/g, "").slice(0, 40);
+    const customId = `uid:${user.id}|tv:${totalVbucks}|cv:${cashbackEligibleVbucks}|g:${isGuest ? "1" : "0"}|eid:${safeEpicId}|cur:${normalizedCurrency}`;
 
     const order = await fetch(`${base}/v2/checkout/orders`, {
       method: "POST",

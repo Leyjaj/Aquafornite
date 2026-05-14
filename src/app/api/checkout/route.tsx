@@ -23,27 +23,12 @@ export async function POST(req: NextRequest) {
 
   const { userId: clerkUserId } = await auth();
 
-  if (!clerkUserId) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
-
-  let user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        clerkId: clerkUserId,
-        email: `${clerkUserId}@temp.com`,
-        aquacoins: 100,
-      },
-    });
-  }
-
   const items = body.items as any[];
   const currency = body.currency || "USD";
   const epicAccountId = String(body.epicAccountId ?? "");
   const epicNickname = String(body.epicNickname ?? "");
   const stripeCurrency = currencyMap[currency] || "usd";
+  const isGuest = !clerkUserId;
 
   try {
     if (!items || items.length === 0) {
@@ -55,6 +40,37 @@ export async function POST(req: NextRequest) {
         { error: "Falta ID de Epic. Guárdalo en la tienda antes de pagar." },
         { status: 400 }
       );
+    }
+
+    let user = null;
+
+    if (clerkUserId) {
+      user = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            clerkId: clerkUserId,
+            email: `${clerkUserId}@temp.com`,
+            aquacoins: 100,
+          },
+        });
+      }
+    } else {
+      const guestKey = epicAccountId.replace(/[^a-zA-Z0-9_-]/g, "").toLowerCase().slice(0, 40) || "epicguest";
+      const guestEmail = `guest+${guestKey}@aquafornais.guest`;
+
+      user = await prisma.user.findUnique({ where: { email: guestEmail } });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: guestEmail,
+            name: epicNickname || `Guest ${epicAccountId.slice(0, 16)}`,
+            aquacoins: 100,
+          },
+        });
+      }
     }
 
     // 🔥 TOTAL para validar OXXO
@@ -124,6 +140,7 @@ export async function POST(req: NextRequest) {
 
       metadata: {
         userId: user.id,
+        isGuest: isGuest ? "1" : "0",
         currency,
         itemCount: String(items.length),
         vbucksTotal: String(vbucksTotal),
