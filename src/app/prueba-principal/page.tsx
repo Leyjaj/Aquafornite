@@ -92,14 +92,14 @@ export default function PruebaPrincipalPage() {
   };
 
   const pricePer100: Record<string, number> = {
-    USD: 0.4,
-    MXN: 7,
-    PEN: 1.4,
-    EUR: 0.34,
-    COP: 1600,
-    CLP: 330,
+    USD: 0.36,
+    MXN: 6,
+    PEN: 1.2,
+    EUR: 0.3,
+    COP: 1200,
+    CLP: 320,
     BOB: 2.7,
-    BRL: 2,
+    BRL: 0.8,
   };
 
   const formatPrice = (value: number) =>
