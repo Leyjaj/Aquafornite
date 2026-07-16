@@ -68,14 +68,14 @@ export default function SkinGridInfinite({ groupedSkins }: Props) {
   const [savedSkinIds, setSavedSkinIds] = useState<Set<string>>(new Set());
 
   const pricePer100: Record<string, number> = {
-    USD: 0.4,
+    USD: 0.43,
     MXN: 7,
-    PEN: 1.4,
-    EUR: 0.34,
-    COP: 1600,
-    CLP: 330,
-    BOB: 2.7,
-    BRL: 2,
+    PEN: 1.5,
+    EUR: 0.36,
+    COP: 1400,
+    CLP: 400,
+    BOB: 4,
+    BRL: 2.2,
   };
 
   const pricePerVbuck = (pricePer100[currency] ?? 0.36) / 100;
