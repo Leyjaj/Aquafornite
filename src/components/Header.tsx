@@ -231,9 +231,15 @@ const Header = () => {
   return (
     <div className="fixed z-1000 w-full flex flex-row items-center justify-between bg-black/10 backdrop-blur-md navbar shadow-sm px-3 md:px-8">
       <div className="flex items-center">
-        <div className="flex-1 flex-row items-center justify-center mt-2">
+        <div className="flex items-center gap-4 mt-2">
           <Link href="/" className="font-fortnite text-xl md:text-3xl text-white hover:opacity-80 transition">
             AQUAFORNAIS
+          </Link>
+          <Link
+            href="/cupones"
+            className="btn btn-sm min-h-0 h-9 border border-white/15 bg-white/10 px-3 text-sm font-semibold text-white hover:border-white/25 hover:bg-white/20"
+          >
+            Cupones
           </Link>
         </div>
       </div>
