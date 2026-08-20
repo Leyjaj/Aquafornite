@@ -45,7 +45,8 @@ export default function HomePage() {
       skins: "Skins 👕👖",
       bots: "Accounts / Bots",
       offers: "Offers",
-      allSkins: "Skin Catalog",
+      fullCatalog: "Browse the full cosmetics catalog",
+      allCosmetics: "All Cosmetics",
       club: "Fortnite Club",
       terms: "Terms and Conditions",
       refunds: "Refund Policy",
@@ -61,7 +62,8 @@ export default function HomePage() {
       skins: "Skins 👕👖",
       bots: "Cuentas / Bots",
       offers: "Ofertas",
-      allSkins: "Catalogo de Skins",
+      fullCatalog: "Explora el catálogo completo de cosméticos",
+      allCosmetics: "Todos los cosméticos",
       club: "Club Fortnite",
       terms: "Términos y condiciones",
       refunds: "Política de reembolsos",
@@ -77,7 +79,8 @@ export default function HomePage() {
       skins: "Skins 👕👖",
       bots: "Contas / Bots",
       offers: "Ofertas",
-      allSkins: "Catalogo de Skins",
+      fullCatalog: "Veja o catálogo completo de cosméticos",
+      allCosmetics: "Todos os cosméticos",
       club: "Clube Fortnite",
       terms: "Termos e Condições",
       refunds: "Política de Reembolso",
@@ -109,6 +112,13 @@ export default function HomePage() {
       </section>
 
       <section className="px-4 py-10">
+        <div className="mx-auto mb-6 flex max-w-6xl flex-col items-start justify-between gap-4 rounded-2xl border border-white/15 bg-black/25 p-4 text-white backdrop-blur-md sm:flex-row sm:items-center">
+          <p className="text-sm text-white/80 md:text-base">{text.fullCatalog}</p>
+          <Link href="/cosmeticos" className="btn btn-sm btn-primary">
+            {text.allCosmetics}
+          </Link>
+        </div>
+
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4">
 
           <Link href="/shop" className={featuredCard}>
@@ -120,11 +130,10 @@ export default function HomePage() {
 
           <Link href="/pavos" className={cardStyle}>{text.pavos}</Link>
           <Link href="/pavos" className={cardStyle}>{text.bundles}</Link>
-          <Link href="/aquacoins" className={cardStyle}>{text.club}</Link>
+          <Link href="/club-fortnite" className={cardStyle}>{text.club}</Link>
           <Link href="/recharge" className={cardStyle}>{text.recharge}</Link>
           <Link href="/cuentas-bots" className={cardStyle}>{text.bots}</Link>
           <Link href="/shop" className={cardStyle}>{text.offers}</Link>
-          <Link href="/cosmeticos" className={cardStyle}>{text.allSkins}</Link>
 
         </div>
       </section>

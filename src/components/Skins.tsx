@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect, FormEvent } from "react";
 import Skin, {  SkinWithDiscount } from "@/interfaces/skin.interface";
 import { showToast } from "nextjs-toast-notify";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 
 import SkinGridInfinite from '@/components/InfiniteSkins';
 
@@ -14,6 +15,7 @@ const copy: Record<ShopLang, any> = {
   es: {
     all: "Todos",
     giftTitle: "Sistema de regalos",
+    giftEyebrow: "Entrega de skins",
     giftDesc: "Ingresa tu usuario o ID de Epic Games para guardar tu cuenta.",
     giftPlaceholder: "Usuario o ID de Epic Games",
     validating: "Validando...",
@@ -37,12 +39,18 @@ const copy: Record<ShopLang, any> = {
     toastNetwork: "Error de red al validar cuenta",
     nextRotation: "Próxima rotación",
     friendNotice:
-      "Para recibir tus cosméticos debes tener agregadas nuestras cuentas por mínimo 48 horas si es tu primera compra.",
+      "Debes tener agregada una de nuestras cuentas de entrega durante al menos 48 horas antes de comprar una skin.",
+    friendSteps: "Así funciona la entrega",
+    friendStepOne: "Agrega una de nuestras cuentas de entrega.",
+    friendStepTwo: "Espera 48 horas si es tu primera compra.",
+    friendStepThree: "Guarda tu cuenta y realiza tu pedido.",
+    accountHint: "Esta cuenta se usará para entregar tus skins.",
     addBots: "Agregar cuentas",
   },
   en: {
     all: "All",
     giftTitle: "Gift System",
+    giftEyebrow: "Skin delivery",
     giftDesc: "Enter your Epic username or ID to save your account.",
     giftPlaceholder: "Epic username or ID",
     validating: "Validating...",
@@ -66,12 +74,18 @@ const copy: Record<ShopLang, any> = {
     toastNetwork: "Network error while validating account",
     nextRotation: "Next rotation",
     friendNotice:
-      "To receive your cosmetics, you must have our accounts added for at least 48 hours if this is your first purchase.",
+      "You must have one of our delivery accounts added for at least 48 hours before buying a skin.",
+    friendSteps: "How delivery works",
+    friendStepOne: "Add one of our delivery accounts.",
+    friendStepTwo: "Wait 48 hours if this is your first purchase.",
+    friendStepThree: "Save your account and place your order.",
+    accountHint: "This account will be used to deliver your skins.",
     addBots: "Add accounts",
   },
   pt: {
     all: "Todos",
     giftTitle: "Sistema de presentes",
+    giftEyebrow: "Entrega de skins",
     giftDesc: "Informe seu usuario ou ID da Epic Games para salvar sua conta.",
     giftPlaceholder: "Usuario ou ID da Epic Games",
     validating: "Validando...",
@@ -95,7 +109,12 @@ const copy: Record<ShopLang, any> = {
     toastNetwork: "Erro de rede ao validar conta",
     nextRotation: "Próxima rotação",
     friendNotice:
-      "Para receber seus cosméticos, você precisa ter nossas contas adicionadas por no mínimo 48 horas se for sua primeira compra.",
+      "Você precisa ter uma de nossas contas de entrega adicionada por pelo menos 48 horas antes de comprar uma skin.",
+    friendSteps: "Como funciona a entrega",
+    friendStepOne: "Adicione uma de nossas contas de entrega.",
+    friendStepTwo: "Aguarde 48 horas se for sua primeira compra.",
+    friendStepThree: "Salve sua conta e faça seu pedido.",
+    accountHint: "Essa conta será usada para entregar suas skins.",
     addBots: "Adicionar contas",
   },
 };
@@ -264,41 +283,87 @@ const Skins = ({
   return (
     <main className="pt-4 w-full flex flex-col min-h-screen p-2 bg-[radial-gradient(ellipse_at_left,_#0774BB_0%,_#052F6F_75%,_#040A3F_100%)] bg-fixed">
       <div className="w-full p-3">
-        <div className="w-full rounded-2xl border border-white/15 bg-black/25 p-3.5 backdrop-blur-md">
-          <h2 className="text-lg md:text-xl font-bold text-white">{text.giftTitle}</h2>
-          <p className="text-white/70 text-sm mt-1">{text.giftDesc}</p>
-
-          <div className="mt-2 rounded-lg border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100">
-            <p>{text.friendNotice}</p>
-            <Link href="/cuentas-bots" className="btn btn-xs btn-info mt-2 border-none">
-              {text.addBots}
-            </Link>
+        <div className="w-full overflow-hidden rounded-2xl border border-white/15 bg-black/25 backdrop-blur-md">
+          <div className="border-b border-white/10 bg-gradient-to-r from-cyan-300/10 via-transparent to-transparent p-4 md:p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-cyan-300/15 text-cyan-200">
+                <Icon icon="solar:gift-bold" width="25" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-200">
+                  {text.giftEyebrow}
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-white md:text-xl">{text.giftTitle}</h2>
+                <p className="mt-1 text-sm text-white/65">{text.giftDesc}</p>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-2.5 flex flex-col md:flex-row gap-2">
-            <input
-              value={epicInput}
-              onChange={(e) => setEpicInput(e.target.value)}
-              type="text"
-              placeholder={text.giftPlaceholder}
-              className="input w-full border-none placeholder-white/50 font-poppins rounded-[8px] text-white bg-black/35 backdrop-blur-md outline-[2px] outline-transparent outline-offset-2 hover:outline-2px hover:outline-blue-100"
-            />
+          <div className="grid gap-4 p-4 md:grid-cols-[1.05fr_1fr] md:p-5">
+            <div className="rounded-xl border border-cyan-300/25 bg-cyan-400/10 p-4">
+              <div className="flex items-start gap-2.5">
+                <Icon className="mt-0.5 shrink-0 text-cyan-200" icon="solar:info-circle-bold" width="21" />
+                <div>
+                  <p className="text-sm font-semibold text-cyan-50">{text.friendSteps}</p>
+                  <p className="mt-1 text-xs leading-5 text-cyan-100/80">{text.friendNotice}</p>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={handleEpicSave}
-              disabled={isResolvingEpic}
-              className="btn btn-primary min-w-38"
-            >
-              {isResolvingEpic ? text.validating : text.saveAccount}
-            </button>
+              <ol className="mt-4 space-y-2.5 text-xs text-white/80">
+                {[text.friendStepOne, text.friendStepTwo, text.friendStepThree].map((step, index) => (
+                  <li key={step} className="flex items-center gap-2.5">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-cyan-300/20 text-[10px] font-bold text-cyan-100">
+                      {index + 1}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+
+              <Link href="/cuentas-bots" className="btn btn-sm mt-4 border-none bg-cyan-400 text-[#04234f] hover:bg-cyan-300">
+                <Icon icon="solar:user-plus-bold" width="17" />
+                {text.addBots}
+              </Link>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+              <label className="text-xs font-semibold uppercase tracking-wide text-white/60" htmlFor="epic-account">
+                {text.giftPlaceholder}
+              </label>
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                <input
+                  id="epic-account"
+                  value={epicInput}
+                  onChange={(e) => setEpicInput(e.target.value)}
+                  type="text"
+                  placeholder={text.giftPlaceholder}
+                  className="input w-full border-white/10 bg-[#031b3a]/80 font-poppins text-white placeholder-white/40 outline-transparent focus:border-cyan-300/60 focus:outline-2 focus:outline-cyan-300/30"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleEpicSave}
+                  disabled={isResolvingEpic}
+                  className="btn btn-primary min-w-38"
+                >
+                  {isResolvingEpic ? text.validating : text.saveAccount}
+                </button>
+              </div>
+
+              {epicId ? (
+                <div className="mt-3 flex items-start gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 text-xs text-emerald-100">
+                  <Icon className="mt-0.5 shrink-0" icon="solar:check-circle-bold" width="17" />
+                  <p>
+                    {text.activeAccount}: <span className="font-bold">{epicName || text.unnamed}</span>
+                    <span className="block break-all text-emerald-100/70">{epicId}</span>
+                    <span className="mt-1 block text-emerald-100/70">{text.accountHint}</span>
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-3 text-xs text-white/45">{text.accountHint}</p>
+              )}
+            </div>
           </div>
-
-          {epicId && (
-            <p className="text-sm text-white/85 mt-1.5">
-              {text.activeAccount}: <span className="font-bold">{epicName || text.unnamed}</span> ({epicId})
-            </p>
-          )}
         </div>
       </div>
 

@@ -320,7 +320,7 @@ export default function PruebaPrincipalPage() {
 
           <Link href="/pavos" className={cardStyle}>{text.pavos}</Link>
           <Link href="/pavos" className={cardStyle}>{text.bundles}</Link>
-          <Link href="/aquacoins" className={cardStyle}>{text.club}</Link>
+           <Link href="/club-fortnite" className={cardStyle}>{text.club}</Link>
           <Link href="/recharge" className={cardStyle}>{text.recharge}</Link>
           <Link href="/cuentas-bots" className={cardStyle}>{text.bots}</Link>
           <Link href="/shop" className={cardStyle}>{text.offers}</Link>
