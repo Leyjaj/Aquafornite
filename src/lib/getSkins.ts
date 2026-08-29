@@ -37,14 +37,14 @@ export async function getSkins(lang: SupportedLang = "es") {
   const skinsRate = data.data.entries;
 
   const pricePer100: Record<string, number> = {
-    USD: 0.37,
-    MXN: 6,
-    PEN: 1.2,
-    EUR: 0.3,
-    COP: 1100,
-    CLP: 400,
-    BOB: 3.5,
-    BRL: 1.9,
+    USD: 0.45,
+    MXN: 8,
+    PEN: 1.6,
+    EUR: 0.41,
+    COP: 1500,
+    CLP: 440,
+    BOB: 3.9,
+    BRL: 2.4,
   };
 
   const baseCurrency = "USD";
